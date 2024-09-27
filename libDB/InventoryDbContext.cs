@@ -29,6 +29,7 @@ namespace libDB
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
                 _configRoot = builder.Build();
+                optionsBuilder.UseSqlServer(_configRoot.GetConnectionString("InventoryManager"));
             }
         }
     }

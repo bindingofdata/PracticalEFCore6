@@ -1,6 +1,7 @@
 ﻿using InventoryModels;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Configuration;
 
 namespace libDB
@@ -8,6 +9,7 @@ namespace libDB
     public class InventoryDbContext : DbContext
     {
         private static IConfigurationRoot _configRoot;
+        private static string _systemId = Environment.MachineName;
 
         public DbSet<Item> Items { get; set; }
 
@@ -18,6 +20,16 @@ namespace libDB
             base(contextOptions)
         {
             
+        }
+
+        public override int SaveChanges()
+        {
+            foreach (EntityEntry entry in ChangeTracker.Entries())
+            {
+                
+            }
+
+            return base.SaveChanges();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

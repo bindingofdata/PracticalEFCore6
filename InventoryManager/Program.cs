@@ -29,14 +29,24 @@ namespace InventoryManager
 #if DEBUG
         public static void EnsureItems()
         {
-            EnsureItem("Airplane!");
-            EnsureItem("The Rocky Horror Picture Show");
-            EnsureItem("Elf");
-            EnsureItem("Mars Attacks!");
-            EnsureItem("Batman The Movie");
+            EnsureItem("Airplane!",
+                "Don't call me Shirley.",
+                "Robert Hays & Julie Hagerty");
+            EnsureItem("The Rocky Horror Picture Show",
+                "Turn yourself over, to absolute pleasure.",
+                "Tim Curry, Susan Sarandon, Barry Bostwick");
+            EnsureItem("Elf",
+                "Son of a nutcracker!",
+                "Will Ferrell & James Caan");
+            EnsureItem("Mars Attacks!",
+                "Ack ack. ACK!",
+                "Everyone and their mom is in this movie.");
+            EnsureItem("Batman The Movie",
+                "Sometimes you just can't get rid of a bomb.",
+                "Burt Ward & Adam West");
         }
 
-        public static void EnsureItem(string name)
+        public static void EnsureItem(string name, string description, string notes)
         {
             Random random = new Random();
 
@@ -49,18 +59,31 @@ namespace InventoryManager
                     Item item = new()
                     {
                         Name = name,
-                        Description = string.Empty,
-                        CreatedByUserId = _loggedInUserId,
-                        CreatedDate = DateTime.UtcNow,
+                        Description = description,
                         IsActive = true,
                         Quantity = random.Next(),
                         LastModifiedUserId = string.Empty,
-                        Notes = string.Empty,
+                        Notes = notes,
                     };
 
                     db.Items.Add(item);
                     db.SaveChanges();
                 }
+            }
+        }
+
+        private static void UpdateItems()
+        {
+            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
+            {
+                List<Item> items = db.Items.ToList();
+                foreach (Item item in items)
+                {
+                    item.CurrentOrFinalPrice = 9.99M;
+                }
+                
+                db.Items.UpdateRange(items);
+                db.SaveChanges();
             }
         }
 #endif

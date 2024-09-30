@@ -26,7 +26,27 @@ namespace libDB
         {
             foreach (EntityEntry entry in ChangeTracker.Entries())
             {
-                
+                if (entry.Entity is FullAuditModel referenceEntity)
+                {
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            referenceEntity.CreatedDate = DateTime.UtcNow;
+                            if (string.IsNullOrWhiteSpace(referenceEntity.CreatedByUserId))
+                            {
+                                referenceEntity.CreatedByUserId = _systemId;
+                            }
+                            break;
+                        case EntityState.Deleted:
+                        case EntityState.Modified:
+                            referenceEntity.LastModifiedDate = DateTime.UtcNow;
+                            if (string.IsNullOrWhiteSpace(referenceEntity.LastModifiedUserId))
+                            {
+                                referenceEntity.LastModifiedUserId = _systemId;
+                            }
+                            break;
+                    }
+                }
             }
 
             return base.SaveChanges();

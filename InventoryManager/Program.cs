@@ -1,4 +1,6 @@
-﻿using libDB;
+﻿using InventoryHelpers;
+
+using libDB;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

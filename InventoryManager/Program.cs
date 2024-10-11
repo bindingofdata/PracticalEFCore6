@@ -61,7 +61,7 @@ namespace InventoryManager
                         Name = name,
                         Description = description,
                         IsActive = true,
-                        Quantity = random.Next(),
+                        Quantity = random.Next(1, 1_000),
                         LastModifiedUserId = string.Empty,
                         Notes = notes,
                     };

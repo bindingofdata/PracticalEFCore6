@@ -12,6 +12,7 @@ namespace libDB
         private static string _systemId = Environment.MachineName;
 
         public DbSet<Item> Items { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         // Default constructor to support scaffolding
         public InventoryDbContext() { }

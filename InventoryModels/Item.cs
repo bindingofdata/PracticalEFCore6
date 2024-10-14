@@ -21,6 +21,9 @@ namespace InventoryModels
         [Range(InventoryConstants.MIN_PRICE, InventoryConstants.MAX_PRICE)]
         public decimal? CurrentOrFinalPrice { get; set; }
 
+        public int? CategoryId { get; set; }
+        public virtual Category? Category { get; set; }
+
         // constants
         public const string TABLE_NAME = "Items";
         public const string MIN_QUANTITY_CONSTRAINT_STRING = "CK_Items_Quantity_Minimum";

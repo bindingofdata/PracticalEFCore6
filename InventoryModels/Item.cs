@@ -24,6 +24,8 @@ namespace InventoryModels
         public int? CategoryId { get; set; }
         public virtual Category? Category { get; set; }
 
+        public virtual List<Player> Players { get; set; } = new List<Player>();
+
         // constants
         public const string TABLE_NAME = "Items";
         public const string MIN_QUANTITY_CONSTRAINT_STRING = "CK_Items_Quantity_Minimum";

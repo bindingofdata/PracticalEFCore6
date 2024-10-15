@@ -14,6 +14,7 @@ namespace libDB
         public DbSet<Item> Items { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<CategoryDetail> CategoryDetails { get; set; }
+        public DbSet<Player> Players { get; set; }
 
         // Default constructor to support scaffolding
         public InventoryDbContext() { }
@@ -52,6 +53,26 @@ namespace libDB
             }
 
             return base.SaveChanges();
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Item>()
+                .HasMany(item => item.Players)
+                .WithMany(player => player.Items)
+                .UsingEntity<Dictionary<string, object>>(
+                "ItemPlayers",
+                itemPlayer => itemPlayer.HasOne<Player>()
+                    .WithMany()
+                    .HasForeignKey("PlayerId")
+                    .HasConstraintName("FK_ItemPlayer_Players_PlayerId")
+                    .OnDelete(DeleteBehavior.Cascade),
+                playerItem => playerItem.HasOne<Item>()
+                    .WithMany()
+                    .HasForeignKey("ItemID")
+                    .HasConstraintName("FK_PlayerItem_Items_ItemId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                );
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

@@ -13,6 +13,7 @@ namespace libDB
 
         public DbSet<Item> Items { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<CategoryDetail> CategoryDetails { get; set; }
 
         // Default constructor to support scaffolding
         public InventoryDbContext() { }

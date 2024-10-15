@@ -13,5 +13,10 @@ namespace InventoryModels
         [StringLength(InventoryConstants.MAX_NAME_LENGTH)]
         public string Name { get; set; }
         public virtual List<Item> Items { get; set; } = new List<Item>();
+
+        public virtual CategoryDetail? CategoryDetail { get; set; }
+
+        // constants
+        public const string TABLE_NAME = "Categories";
     }
 }

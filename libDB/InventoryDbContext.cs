@@ -15,6 +15,7 @@ namespace libDB
         public DbSet<Category> Categories { get; set; }
         public DbSet<CategoryDetail> CategoryDetails { get; set; }
         public DbSet<Player> Players { get; set; }
+        public DbSet<Genre> Genres { get; set; }
 
         // Default constructor to support scaffolding
         public InventoryDbContext() { }

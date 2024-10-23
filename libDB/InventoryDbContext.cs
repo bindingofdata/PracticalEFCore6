@@ -18,6 +18,7 @@ namespace libDB
         public DbSet<Player> Players { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<GetItemsForListingDTO> ItemsForListing { get; set; }
+        public DbSet<AllItemNamesPipeDelimitedDTO> AllItemNamesPipeDelimited { get; set; }
 
         // Default constructor to support scaffolding
         public InventoryDbContext() { }
@@ -81,6 +82,12 @@ namespace libDB
             {
                 itemsForListing.HasNoKey();
                 itemsForListing.ToView("ItemsForListing");
+            });
+
+            modelBuilder.Entity<AllItemNamesPipeDelimitedDTO>(itemNamesPipeDelimited =>
+            {
+                itemNamesPipeDelimited.HasNoKey();
+                itemNamesPipeDelimited.ToView("AllItemNamesPipeDelimited");
             });
         }
 

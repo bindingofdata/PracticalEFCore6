@@ -5,6 +5,7 @@ using InventoryModels.DTOs;
 
 using libDB;
 
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -21,8 +22,8 @@ namespace InventoryManager
 #if DEBUG
             EnsureItems();
             GetItemsForListing();
+            GetAllActiveItemNamesAsPipeDelimitedString();
 #endif
-
         }
 
         public static void BuildOptions()
@@ -108,6 +109,17 @@ namespace InventoryManager
                     }
                     Console.WriteLine(output);
                 }
+            }
+        }
+
+        private static void GetAllActiveItemNamesAsPipeDelimitedString()
+        {
+            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
+            {
+                AllItemNamesPipeDelimitedDTO? result = db.AllItemNamesPipeDelimited
+                    .FromSqlRaw("SELECT [dbo].[ItemNamesPipeDelimited] (@IsActive) AllItemNames", new SqlParameter("IsActive", 1))
+                    .FirstOrDefault();
+                Console.WriteLine($"All active Items: {result?.AllItemNames}");
             }
         }
 #endif

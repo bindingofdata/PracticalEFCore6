@@ -1,4 +1,5 @@
 ﻿using InventoryModels;
+using InventoryModels.DTOs;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -16,6 +17,7 @@ namespace libDB
         public DbSet<CategoryDetail> CategoryDetails { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<Genre> Genres { get; set; }
+        public DbSet<GetItemsForListingDTO> ItemsForListing { get; set; }
 
         // Default constructor to support scaffolding
         public InventoryDbContext() { }
@@ -74,6 +76,12 @@ namespace libDB
                     .HasConstraintName("FK_PlayerItem_Items_ItemId")
                     .OnDelete(DeleteBehavior.Cascade)
                 );
+
+            modelBuilder.Entity<GetItemsForListingDTO>(itemsForListing =>
+            {
+                itemsForListing.HasNoKey();
+                itemsForListing.ToView("ItemsForListing");
+            });
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

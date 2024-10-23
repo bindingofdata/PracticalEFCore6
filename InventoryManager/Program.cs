@@ -1,10 +1,12 @@
 ﻿using InventoryHelpers;
 
+using InventoryModels;
+using InventoryModels.DTOs;
+
 using libDB;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using InventoryModels;
 
 namespace InventoryManager
 {
@@ -16,7 +18,11 @@ namespace InventoryManager
         public static void Main(string[] args)
         {
             BuildOptions();
+#if DEBUG
             EnsureItems();
+            GetItemsForListing();
+#endif
+
         }
 
         public static void BuildOptions()
@@ -84,6 +90,24 @@ namespace InventoryManager
                 
                 db.Items.UpdateRange(items);
                 db.SaveChanges();
+            }
+        }
+
+        private static void GetItemsForListing()
+        {
+            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
+            {
+                foreach (GetItemsForListingDTO item in db.ItemsForListing
+                    .FromSqlRaw("EXECUTE dbo.GetItemsForListing")
+                    .ToList())
+                {
+                    string output = $"ITEM {item.Name} - \"{item.Description}\"";
+                    if (!string.IsNullOrWhiteSpace(item.CategoryName))
+                    {
+                        output += $" [{item.CategoryName}]";
+                    }
+                    Console.WriteLine(output);
+                }
             }
         }
 #endif

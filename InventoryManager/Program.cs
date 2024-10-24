@@ -9,6 +9,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
+using System.Net.NetworkInformation;
+
 namespace InventoryManager
 {
     internal class Program
@@ -23,6 +25,7 @@ namespace InventoryManager
             EnsureItems();
             GetItemsForListing();
             GetAllActiveItemNamesAsPipeDelimitedString();
+            GetItemsTotalValues();
 #endif
         }
 
@@ -99,8 +102,7 @@ namespace InventoryManager
             using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
             {
                 foreach (GetItemsForListingDTO item in db.ItemsForListing
-                    .FromSqlRaw("EXECUTE dbo.GetItemsForListing")
-                    .ToList())
+                    .FromSqlRaw("EXECUTE dbo.GetItemsForListing"))
                 {
                     string output = $"ITEM {item.Name} - \"{item.Description}\"";
                     if (!string.IsNullOrWhiteSpace(item.CategoryName))
@@ -120,6 +122,19 @@ namespace InventoryManager
                     .FromSqlRaw("SELECT [dbo].[ItemNamesPipeDelimited] (@IsActive) AllItemNames", new SqlParameter("IsActive", 1))
                     .FirstOrDefault();
                 Console.WriteLine($"All active Items: {result?.AllItemNames}");
+            }
+        }
+
+        private static void GetItemsTotalValues()
+        {
+            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
+            {
+                foreach (GetItemsTotalValueDTO item in db.ItemsTotalValues
+                    .FromSqlRaw("SELECT * from [dbo].[GetItemsTotalValue] (@IsActive)",
+                    new SqlParameter("IsActive", 1)))
+                {
+                    Console.WriteLine($"Item Info: {item.Id,-10}|{item.Name,-50}|{item.Quantity,-4}|{item.TotalValue,-5}");
+                }
             }
         }
 #endif

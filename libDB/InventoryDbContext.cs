@@ -19,6 +19,7 @@ namespace libDB
         public DbSet<Genre> Genres { get; set; }
         public DbSet<GetItemsForListingDTO> ItemsForListing { get; set; }
         public DbSet<AllItemNamesPipeDelimitedDTO> AllItemNamesPipeDelimited { get; set; }
+        public DbSet<GetItemsTotalValueDTO> ItemsTotalValues { get; set; }
 
         // Default constructor to support scaffolding
         public InventoryDbContext() { }

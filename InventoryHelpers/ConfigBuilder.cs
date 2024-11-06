@@ -31,7 +31,7 @@ namespace InventoryHelpers
             {
                 if (_configRoot == null)
                 {
-                    ConfigBuilder throwAway = Instance;
+                    _ = Instance;
                 }
                 return _configRoot;
             }

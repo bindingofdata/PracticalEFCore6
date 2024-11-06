@@ -11,6 +11,7 @@ namespace libDB
     {
         private static IConfigurationRoot _configRoot;
         private static string _systemId = Environment.MachineName;
+        private const string SEED_USER_ID = "873fb5cd-ad6b-458d-ab59-3c5eca45a368";
 
         public DbSet<Item> Items { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -95,12 +96,12 @@ namespace libDB
             modelBuilder.Entity<Genre>(table =>
             {
                 table.HasData(
-                    new Genre() { Id = 1, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Fantasy" },
-                    new Genre() { Id = 2, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Sci/Fi" },
-                    new Genre() { Id = 3, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Horror" },
-                    new Genre() { Id = 4, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Comedy" },
-                    new Genre() { Id = 5, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Drama" },
-                    new Genre() { Id = 6, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Act/Adv" });
+                    new Genre() { Id = 1, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Fantasy" },
+                    new Genre() { Id = 2, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Sci/Fi" },
+                    new Genre() { Id = 3, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Horror" },
+                    new Genre() { Id = 4, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Comedy" },
+                    new Genre() { Id = 5, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Drama" },
+                    new Genre() { Id = 6, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Act/Adv" });
             });
         }
 

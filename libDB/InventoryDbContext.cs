@@ -90,6 +90,18 @@ namespace libDB
                 itemNamesPipeDelimited.HasNoKey();
                 itemNamesPipeDelimited.ToView("AllItemNamesPipeDelimited");
             });
+
+            DateTime genreCreateDate = new DateTime(2001, 01, 01);
+            modelBuilder.Entity<Genre>(table =>
+            {
+                table.HasData(
+                    new Genre() { Id = 1, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Fantasy" },
+                    new Genre() { Id = 2, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Sci/Fi" },
+                    new Genre() { Id = 3, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Horror" },
+                    new Genre() { Id = 4, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Comedy" },
+                    new Genre() { Id = 5, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Drama" },
+                    new Genre() { Id = 6, CreatedDate = genreCreateDate, IsActive = true, IsDeleted = false, Name = "Act/Adv" });
+            });
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

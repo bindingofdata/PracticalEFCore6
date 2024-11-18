@@ -9,17 +9,11 @@ using InventoryModels;
 
 namespace InventoryDataMigrator
 {
-    public class CategoryBuilder
+    public sealed class CategoryBuilder : BaseBuilder
     {
-        private readonly InventoryDbContext _context;
-        private const string SEED_USER_ID = "873fb5cd-ad6b-458d-ab59-3c5eca45a368";
+        public CategoryBuilder(InventoryDbContext context) : base(context) { }
 
-        public CategoryBuilder(InventoryDbContext context)
-        {
-            _context = context;
-        }
-
-        public void GenerateSeedData()
+        public override void GenerateSeedData()
         {
             if (!_context.Categories.Any())
             {

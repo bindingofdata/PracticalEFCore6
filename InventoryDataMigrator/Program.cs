@@ -38,6 +38,8 @@ namespace InventoryDataMigrator
             {
                 CategoryBuilder categoryBuilder = new CategoryBuilder(context);
                 categoryBuilder.GenerateSeedData();
+                ItemBuilder itemBuilder = new ItemBuilder(context);
+                itemBuilder.GenerateSeedData();
             }
         }
     }

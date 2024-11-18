@@ -21,6 +21,7 @@ namespace libDB
         public DbSet<GetItemsForListingDTO> ItemsForListing { get; set; }
         public DbSet<AllItemNamesPipeDelimitedDTO> AllItemNamesPipeDelimited { get; set; }
         public DbSet<GetItemsTotalValueDTO> ItemsTotalValues { get; set; }
+        public DbSet<FullItemDetailsDTO> FullItemDetails { get; set; }
 
         // Default constructor to support scaffolding
         public InventoryDbContext() { }
@@ -102,6 +103,12 @@ namespace libDB
                     new Genre() { Id = 4, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Comedy" },
                     new Genre() { Id = 5, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Drama" },
                     new Genre() { Id = 6, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Act/Adv" });
+            });
+
+            modelBuilder.Entity<FullItemDetailsDTO>(x =>
+            {
+                x.HasNoKey();
+                x.ToView("FullItemDetailsDTO");
             });
         }
 

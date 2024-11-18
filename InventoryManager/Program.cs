@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 using System.Net.NetworkInformation;
+using System.Text;
 
 namespace InventoryManager
 {
@@ -21,7 +22,34 @@ namespace InventoryManager
         public static void Main(string[] args)
         {
             BuildOptions();
+#if DEBUG
+            GetFullitemDetails();
+#endif
         }
+
+#if DEBUG
+        private static void GetFullitemDetails()
+        {
+            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
+            {
+                IQueryable<FullItemDetailsDTO> result = db.FullItemDetails.FromSqlRaw(
+                    "SELECT * FROM [dbo].[vwFullItemDetails] ORDER BY ItemName, GenreName, Category, PlayerName");
+
+                StringBuilder resultView = new StringBuilder();
+                foreach (FullItemDetailsDTO item in result)
+                {
+                    resultView.Clear();
+                    resultView.Append($"Item] {item.Id, -10}");
+                    resultView.Append($"|{item.ItemName,-50}");
+                    resultView.Append($"|{item.ItemDescription,-4}");
+                    resultView.Append($"|{item.PlayerName,-5}");
+                    resultView.Append($"|{item.Category,-5}");
+                    resultView.Append($"|{item.GenreName,-5}");
+                    Console.WriteLine(resultView.ToString());
+                }
+            }
+        }
+#endif
 
         public static void BuildOptions()
         {

@@ -27,10 +27,7 @@ namespace libDB
         public InventoryDbContext() { }
 
         public InventoryDbContext(DbContextOptions contextOptions) :
-            base(contextOptions)
-        {
-            
-        }
+            base(contextOptions) { }
 
         public override int SaveChanges()
         {

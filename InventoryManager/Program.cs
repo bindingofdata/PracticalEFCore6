@@ -1,7 +1,7 @@
 ﻿using InventoryHelpers;
 
 using InventoryModels;
-using InventoryModels.DTOs;
+using InventoryModels.Dtos;
 
 using libDB;
 
@@ -32,11 +32,11 @@ namespace InventoryManager
         {
             using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
             {
-                IQueryable<FullItemDetailsDTO> result = db.FullItemDetails.FromSqlRaw(
+                IQueryable<FullItemDetailsDto> result = db.FullItemDetails.FromSqlRaw(
                     "SELECT * FROM [dbo].[vwFullItemDetails] ORDER BY ItemName, GenreName, Category, PlayerName");
 
                 StringBuilder resultView = new StringBuilder();
-                foreach (FullItemDetailsDTO item in result)
+                foreach (FullItemDetailsDto item in result)
                 {
                     resultView.Clear();
                     resultView.Append($"Item] {item.Id, -10}");

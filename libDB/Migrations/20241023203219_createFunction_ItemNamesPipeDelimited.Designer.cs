@@ -84,7 +84,7 @@ namespace libDB.Migrations
                     b.ToTable("CategoryDetails");
                 });
 
-            modelBuilder.Entity("InventoryModels.DTOs.GetItemsForListingDTO", b =>
+            modelBuilder.Entity("InventoryModels.Dtos.GetItemsForListingDto", b =>
                 {
                     b.Property<string>("CategoryName")
                         .HasColumnType("nvarchar(max)");

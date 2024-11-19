@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InventoryModels.DTOs
+namespace InventoryModels.Dtos
 {
-    public class AllItemNamesPipeDelimitedDTO
+    public class AllItemNamesPipeDelimitedDto
     {
         public string? AllItemNames { get; set; } = string.Empty;
     }

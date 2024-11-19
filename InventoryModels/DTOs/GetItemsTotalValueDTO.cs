@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InventoryModels.DTOs
+namespace InventoryModels.Dtos
 {
-    public class GetItemsTotalValueDTO
+    public class GetItemsTotalValueDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

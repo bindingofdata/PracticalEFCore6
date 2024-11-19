@@ -84,7 +84,7 @@ namespace libDB.Migrations
                     b.ToTable("CategoryDetails");
                 });
 
-            modelBuilder.Entity("InventoryModels.DTOs.AllItemNamesPipeDelimitedDTO", b =>
+            modelBuilder.Entity("InventoryModels.Dtos.AllItemNamesPipeDelimitedDto", b =>
                 {
                     b.Property<string>("AllItemNames")
                         .HasColumnType("nvarchar(max)");
@@ -94,7 +94,7 @@ namespace libDB.Migrations
                     b.ToView("AllItemNamesPipeDelimited", (string)null);
                 });
 
-            modelBuilder.Entity("InventoryModels.DTOs.GetItemsForListingDTO", b =>
+            modelBuilder.Entity("InventoryModels.Dtos.GetItemsForListingDto", b =>
                 {
                     b.Property<string>("CategoryName")
                         .HasColumnType("nvarchar(max)");

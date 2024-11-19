@@ -1,5 +1,5 @@
 ﻿using InventoryModels;
-using InventoryModels.DTOs;
+using InventoryModels.Dtos;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -18,10 +18,10 @@ namespace libDB
         public DbSet<CategoryDetail> CategoryDetails { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<Genre> Genres { get; set; }
-        public DbSet<GetItemsForListingDTO> ItemsForListing { get; set; }
-        public DbSet<AllItemNamesPipeDelimitedDTO> AllItemNamesPipeDelimited { get; set; }
-        public DbSet<GetItemsTotalValueDTO> ItemsTotalValues { get; set; }
-        public DbSet<FullItemDetailsDTO> FullItemDetails { get; set; }
+        public DbSet<GetItemsForListingDto> ItemsForListing { get; set; }
+        public DbSet<AllItemNamesPipeDelimitedDto> AllItemNamesPipeDelimited { get; set; }
+        public DbSet<GetItemsTotalValueDto> ItemsTotalValues { get; set; }
+        public DbSet<FullItemDetailsDto> FullItemDetails { get; set; }
 
         // Default constructor to support scaffolding
         public InventoryDbContext() { }
@@ -81,13 +81,13 @@ namespace libDB
                     .OnDelete(DeleteBehavior.Cascade)
                 );
 
-            modelBuilder.Entity<GetItemsForListingDTO>(itemsForListing =>
+            modelBuilder.Entity<GetItemsForListingDto>(itemsForListing =>
             {
                 itemsForListing.HasNoKey();
                 itemsForListing.ToView("ItemsForListing");
             });
 
-            modelBuilder.Entity<AllItemNamesPipeDelimitedDTO>(itemNamesPipeDelimited =>
+            modelBuilder.Entity<AllItemNamesPipeDelimitedDto>(itemNamesPipeDelimited =>
             {
                 itemNamesPipeDelimited.HasNoKey();
                 itemNamesPipeDelimited.ToView("AllItemNamesPipeDelimited");
@@ -105,10 +105,10 @@ namespace libDB
                     new Genre() { Id = 6, CreatedDate = genreCreateDate, CreatedByUserId = SEED_USER_ID, IsActive = true, IsDeleted = false, Name = "Act/Adv" });
             });
 
-            modelBuilder.Entity<FullItemDetailsDTO>(x =>
+            modelBuilder.Entity<FullItemDetailsDto>(x =>
             {
                 x.HasNoKey();
-                x.ToView("FullItemDetailsDTO");
+                x.ToView("FullItemDetailsDto");
             });
         }
 

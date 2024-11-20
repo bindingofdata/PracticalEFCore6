@@ -32,6 +32,7 @@ namespace InventoryManager
             BuildMapper();
 #if DEBUG
             ListInventory();
+            ListInventoryLinq();
             GetFullitemDetails();
 #endif
         }
@@ -63,6 +64,37 @@ namespace InventoryManager
                 List<Item> items = db.Items.OrderBy(x => x.Name).ToList();
                 List<ItemDto> results = _mapper.Map<List<Item>, List<ItemDto>>(items);
                 results.ForEach(item => Console.WriteLine($"Item: {item.Name}"));
+            }
+        }
+
+        private static void ListInventoryLinq()
+        {
+            DateTime minDate = new DateTime(2021, 1, 1);
+            DateTime maxDate = new DateTime(2025, 1, 1);
+            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
+            {
+                List<ItemDto> results =
+                    db.Items.Select(item => new ItemDto
+                    {
+                        CreatedDate = item.CreatedDate,
+                        CategoryName = item.Category.Name,
+                        Description = item.Description,
+                        IsActive = item.IsActive,
+                        IsDeleted = item.IsDeleted,
+                        Name = item.Name,
+                        Notes = item.Notes,
+                        CategoryId = item.Category.Id,
+                        Id = item.Id,
+                    })
+                .Where(item => item.CreatedDate >= minDate && item.CreatedDate <= maxDate)
+                .OrderBy(item => item.CategoryName)
+                .ThenBy(item => item.Name)
+                .ToList();
+
+                foreach (var item in results)
+                {
+                    Console.WriteLine($"ITEM: {item.CategoryName} | {item.Name} - {item.Description}");
+                }
             }
         }
 

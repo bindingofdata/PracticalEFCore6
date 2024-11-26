@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 
 using InventoryHelpers;
 
@@ -31,9 +32,20 @@ namespace InventoryManager
             BuildOptions();
             BuildMapper();
 #if DEBUG
+            PrintSectionHeader(nameof(ListInventory));
             ListInventory();
+
+            PrintSectionHeader(nameof(ListInventoryLinq));
             ListInventoryLinq();
+
+            PrintSectionHeader(nameof(ListInventoryWithProjetion));
+            ListInventoryWithProjetion();
+
+            PrintSectionHeader(nameof(GetFullitemDetails));
             GetFullitemDetails();
+
+            PrintSectionHeader(nameof(ListCategoriesAndColors));
+            ListCategoriesAndColors();
 #endif
         }
 
@@ -57,6 +69,13 @@ namespace InventoryManager
         }
 
 #if DEBUG
+        private static void PrintSectionHeader(string sectionName)
+        {
+            Console.WriteLine();
+            Console.WriteLine($"--> {sectionName} <--");
+            Console.WriteLine(_sectionSeparator);
+        }
+
         private static void ListInventory()
         {
             using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
@@ -98,6 +117,19 @@ namespace InventoryManager
             }
         }
 
+        private static void ListInventoryWithProjetion()
+        {
+            using (InventoryDbContext db = new InventoryDbContext( _optionsBuilder.Options))
+            {
+                List<ItemDto> items = db.Items
+                    .OrderBy(item => item.Name)
+                    .ProjectTo<ItemDto>(_mapper.ConfigurationProvider)
+                    .ToList();
+
+                items.ForEach(item => Console.WriteLine($"New item: {item}"));
+            }
+        }
+
         private static void GetFullitemDetails()
         {
             using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
@@ -119,9 +151,26 @@ namespace InventoryManager
                 }
             }
         }
+
+        private static void ListCategoriesAndColors()
+        {
+            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
+            {
+                List<CategoryDto> results = db.Categories
+                    .Include(item => item.CategoryDetail)
+                    .ProjectTo<CategoryDto>(_mapper.ConfigurationProvider)
+                    .ToList();
+
+                foreach (CategoryDto category in results)
+                {
+                    Console.WriteLine($"Category [{category.Category}] is {category.CategoryDetail.Color}");
+                }
+            }
+        }
 #endif
 
         private static string _systemId = Environment.MachineName;
         private static string _loggedInUserId = Environment.UserName;
+        private static string _sectionSeparator = "--------------------------------------------------------------";
     }
 }

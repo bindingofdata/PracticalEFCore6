@@ -80,9 +80,17 @@ namespace InventoryManager
         {
             using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
             {
-                List<Item> items = db.Items.OrderBy(x => x.Name).ToList();
-                List<ItemDto> results = _mapper.Map<List<Item>, List<ItemDto>>(items);
-                results.ForEach(item => Console.WriteLine($"Item: {item.Name}"));
+                List<ItemDto> results = db.Items
+                    .Select(dto => new ItemDto
+                    {
+                        Name = dto.Name,
+                        Description = dto.Description,
+                    })
+                    .ToList();
+
+                results.OrderBy(x => x.Name)
+                    .ToList()
+                    .ForEach(item => Console.WriteLine($"Item: {item.Name}"));
             }
         }
 
@@ -93,7 +101,9 @@ namespace InventoryManager
             using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
             {
                 List<ItemDto> results =
-                    db.Items.Select(item => new ItemDto
+                    db.Items.Include(item => item.Category)
+                    .ToList()
+                    .Select(item => new ItemDto
                     {
                         CreatedDate = item.CreatedDate,
                         CategoryName = item.Category.Name,
@@ -110,7 +120,7 @@ namespace InventoryManager
                 .ThenBy(item => item.Name)
                 .ToList();
 
-                foreach (var item in results)
+                foreach (ItemDto item in results)
                 {
                     Console.WriteLine($"ITEM: {item.CategoryName} | {item.Name} - {item.Description}");
                 }
@@ -122,11 +132,12 @@ namespace InventoryManager
             using (InventoryDbContext db = new InventoryDbContext( _optionsBuilder.Options))
             {
                 List<ItemDto> items = db.Items
-                    .OrderBy(item => item.Name)
                     .ProjectTo<ItemDto>(_mapper.ConfigurationProvider)
                     .ToList();
 
-                items.ForEach(item => Console.WriteLine($"New item: {item}"));
+                items.OrderBy(item => item.Name)
+                    .ToList()
+                    .ForEach(item => Console.WriteLine($"New item: {item}"));
             }
         }
 
@@ -134,8 +145,13 @@ namespace InventoryManager
         {
             using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
             {
-                IQueryable<FullItemDetailsDto> result = db.FullItemDetails.FromSqlRaw(
-                    "SELECT * FROM [dbo].[vwFullItemDetails] ORDER BY ItemName, GenreName, Category, PlayerName");
+                IOrderedEnumerable<FullItemDetailsDto> result = db.FullItemDetails.FromSqlRaw(
+                    "SELECT * FROM [dbo].[vwFullItemDetails]")
+                    .ToList()
+                    .OrderBy(item => item.ItemName)
+                    .ThenBy(item => item.GenreName)
+                    .ThenBy(item => item.Category)
+                    .ThenBy(item => item.PlayerName);
 
                 StringBuilder resultView = new StringBuilder();
                 foreach (FullItemDetailsDto item in result)

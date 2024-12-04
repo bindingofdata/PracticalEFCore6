@@ -47,7 +47,7 @@ namespace InventoryDatabaseLayer
         {
             SqlParameter isActiveParam = new SqlParameter("IsActive", 1);
             return _context.ItemsTotalValues
-                .FromSqlRaw("SELECT * from [dbo].[GetItemsTotalValues] (@IsActive)", isActiveParam)
+                .FromSqlRaw("SELECT * from [dbo].[GetItemsTotalValue] (@IsActive)", isActiveParam)
                 .ToList();
         }
 

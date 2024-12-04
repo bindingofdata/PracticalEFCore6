@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\InventoryBusinessLayer\InventoryBusinessLayer.csproj" />
     <ProjectReference Include="..\InventoryHelpers\InventoryHelpers.csproj" />
     <ProjectReference Include="..\libDB\libDB.csproj" />
   </ItemGroup>

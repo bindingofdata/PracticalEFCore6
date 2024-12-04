@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 
+using InventoryBusinessLayer;
+
 using InventoryHelpers;
 
 using InventoryModels;
@@ -25,30 +27,41 @@ namespace InventoryManager
         private static MapperConfiguration _mapperConfiguration;
         private static IMapper _mapper;
         private static IServiceProvider _serviceProvider;
+        private static IItemsService _itemsService;
+        private static ICategoriesService _categoriesService;
 
         public static void Main(string[] args)
         {
             BuildOptions();
             BuildMapper();
-#if DEBUG
-            PrintSectionHeader(nameof(ListInventory));
-            ListInventory();
+            using (var db = new InventoryDbContext(_optionsBuilder.Options))
+            {
+                _itemsService = new ItemsService(db, _mapper);
+                _categoriesService = new CategoriesService(db, _mapper);
+                PrintSectionHeader(nameof(ListInventory));
+                ListInventory();
 
-            PrintSectionHeader(nameof(ListInventoryLinq));
-            ListInventoryLinq();
+                PrintSectionHeader(nameof(GetItemsForListing));
+                GetItemsForListing();
 
-            PrintSectionHeader(nameof(ListInventoryWithProjetion));
-            ListInventoryWithProjetion();
+                PrintSectionHeader(nameof(GetAllItemsAsPipeDelimitedString));
+                GetAllItemsAsPipeDelimitedString();
 
-            PrintSectionHeader(nameof(GetFullitemDetails));
-            GetFullitemDetails();
+                PrintSectionHeader(nameof(GetItemsTotalValues));
+                GetItemsTotalValues();
 
-            PrintSectionHeader(nameof(ListCategoriesAndColors));
-            ListCategoriesAndColors();
-#endif
+                PrintSectionHeader(nameof(GetFullitemDetails));
+                GetFullitemDetails();
+
+                PrintSectionHeader(nameof(ListInventoryLinq));
+                ListInventoryLinq();
+
+                PrintSectionHeader(nameof(ListCategoriesAndColors));
+                ListCategoriesAndColors();
+            }
         }
 
-        public static void BuildOptions()
+        private static void BuildOptions()
         {
             _configuration = ConfigBuilder.ConfigurationRoot;
             _optionsBuilder = new DbContextOptionsBuilder<InventoryDbContext>();
@@ -67,7 +80,6 @@ namespace InventoryManager
             _mapper = _mapperConfiguration.CreateMapper();
         }
 
-#if DEBUG
         private static void PrintSectionHeader(string sectionName)
         {
             Console.WriteLine();
@@ -77,66 +89,40 @@ namespace InventoryManager
 
         private static void ListInventory()
         {
-            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
-            {
-                List<ItemDto> results = db.Items
-                    .Select(dto => new ItemDto
-                    {
-                        Name = dto.Name,
-                        Description = dto.Description,
-                    })
-                    .ToList();
+            List<ItemDto> results = _itemsService.GetItems();
 
-                results.OrderBy(x => x.Name)
-                    .ToList()
-                    .ForEach(item => Console.WriteLine($"Item: {item.Name}"));
-            }
+            results.OrderBy(x => x.Name)
+                .ToList()
+                .ForEach(item => Console.WriteLine($"Item: {item.Name}"));
         }
 
-        private static void ListInventoryLinq()
+        private static void GetItemsForListing()
         {
-            DateTime minDate = new DateTime(2021, 1, 1);
-            DateTime maxDate = new DateTime(2025, 1, 1);
-            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
+            List<GetItemsForListingDto> results = _itemsService.GetItemsForListingFromProcedure();
+            StringBuilder output = new StringBuilder();
+            foreach (GetItemsForListingDto item in results)
             {
-                List<ItemDto> results =
-                    db.Items.Include(item => item.Category)
-                    .ToList()
-                    .Select(item => new ItemDto
-                    {
-                        CreatedDate = item.CreatedDate,
-                        CategoryName = item.Category.Name,
-                        Description = item.Description,
-                        IsActive = item.IsActive,
-                        IsDeleted = item.IsDeleted,
-                        Name = item.Name,
-                        Notes = item.Notes,
-                        CategoryId = item.Category.Id,
-                        Id = item.Id,
-                    })
-                .Where(item => item.CreatedDate >= minDate && item.CreatedDate <= maxDate)
-                .OrderBy(item => item.CategoryName)
-                .ThenBy(item => item.Name)
-                .ToList();
-
-                foreach (ItemDto item in results)
+                output.Append($"ITEM {item.Name}");
+                if (!string.IsNullOrWhiteSpace(item.CategoryName))
                 {
-                    Console.WriteLine($"ITEM: {item.CategoryName} | {item.Name} - {item.Description}");
+                    output.Append($" ({item.CategoryName})");
                 }
+                output.Append($" | {item.Description}");
+                Console.WriteLine(output.ToString());
+                output.Clear();
             }
         }
 
-        private static void ListInventoryWithProjetion()
+        private static void GetAllItemsAsPipeDelimitedString()
         {
-            using (InventoryDbContext db = new InventoryDbContext( _optionsBuilder.Options))
-            {
-                List<ItemDto> items = db.Items
-                    .ProjectTo<ItemDto>(_mapper.ConfigurationProvider)
-                    .ToList();
+            Console.WriteLine($"All items: {_itemsService.GetAllItemsPipeDelimitedString()}");
+        }
 
-                items.OrderBy(item => item.Name)
-                    .ToList()
-                    .ForEach(item => Console.WriteLine($"New item: {item}"));
+        private static void GetItemsTotalValues()
+        {
+            foreach (GetItemsTotalValueDto item in _itemsService.GetItemsTotalValue(true))
+            {
+                Console.WriteLine($"Item -{item.Id,-10}|{item.Name,-50}|{item.Quantity,-4}|{item.TotalValue,-5}");
             }
         }
 
@@ -144,45 +130,46 @@ namespace InventoryManager
         {
             using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
             {
-                IOrderedEnumerable<FullItemDetailsDto> result = db.FullItemDetails.FromSqlRaw(
-                    "SELECT * FROM [dbo].[vwFullItemDetails]")
-                    .ToList()
-                    .OrderBy(item => item.ItemName)
-                    .ThenBy(item => item.GenreName)
-                    .ThenBy(item => item.Category)
-                    .ThenBy(item => item.PlayerName);
+                List<FullItemDetailsDto> result = _itemsService.GetItemsWithGenresAndCategories();
 
                 StringBuilder resultView = new StringBuilder();
                 foreach (FullItemDetailsDto item in result)
                 {
-                    resultView.Clear();
-                    resultView.Append($"Item] {item.Id, -10}");
+                    resultView.Append($"Item] {item.Id,-10}");
                     resultView.Append($"|{item.ItemName,-50}");
                     resultView.Append($"|{item.ItemDescription,-4}");
                     resultView.Append($"|{item.PlayerName,-5}");
                     resultView.Append($"|{item.Category,-5}");
                     resultView.Append($"|{item.GenreName,-5}");
                     Console.WriteLine(resultView.ToString());
+                    resultView.Clear();
                 }
+            }
+        }
+
+        private static void ListInventoryLinq()
+        {
+            DateTime minDate = new DateTime(2021, 1, 1);
+            DateTime maxDate = new DateTime(2025, 1, 1);
+
+            List<ItemDto> results = _itemsService.GetItemsByDateRange(minDate,maxDate)
+                .OrderBy(item => item.CategoryName)
+                .ThenBy(item => item.Name)
+                .ToList();
+
+            foreach (ItemDto item in results)
+            {
+                Console.WriteLine($"ITEM: {item.CategoryName} | {item.Name} - {item.Description}");
             }
         }
 
         private static void ListCategoriesAndColors()
         {
-            using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
+            foreach (CategoryDto category in _categoriesService.ListCategoriesAndDetails())
             {
-                List<CategoryDto> results = db.Categories
-                    .Include(item => item.CategoryDetail)
-                    .ProjectTo<CategoryDto>(_mapper.ConfigurationProvider)
-                    .ToList();
-
-                foreach (CategoryDto category in results)
-                {
-                    Console.WriteLine($"Category [{category.Category}] is {category.CategoryDetail.Color}");
-                }
+                Console.WriteLine($"Category [{category.Category}] is {category.CategoryDetail.Color}");
             }
         }
-#endif
 
         private static string _systemId = Environment.MachineName;
         private static string _loggedInUserId = Environment.UserName;

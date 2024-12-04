@@ -20,7 +20,7 @@ namespace InventoryModels.Dtos
 
         public override string ToString()
         {
-            return $"{Name, -25} | {Description} - {CategoryName}";
+            return $"{Name, -25}: {Description} - {CategoryName}";
         }
     }
 }

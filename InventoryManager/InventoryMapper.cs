@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 
 using InventoryModels;
-using InventoryModels.DTOs;
+using InventoryModels.Dtos;
 
 namespace InventoryManager
 {

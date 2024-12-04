@@ -1,4 +1,4 @@
-﻿using InventoryModels.DTOs;
+﻿using InventoryModels.Dtos;
 
 using System;
 using System.Collections.Generic;

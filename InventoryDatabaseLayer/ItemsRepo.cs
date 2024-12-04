@@ -2,7 +2,6 @@
 using AutoMapper.QueryableExtensions;
 
 using InventoryModels.Dtos;
-using InventoryModels.DTOs;
 
 using libDB;
 

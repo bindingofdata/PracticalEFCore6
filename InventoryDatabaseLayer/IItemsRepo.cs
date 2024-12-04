@@ -1,5 +1,4 @@
 ﻿using InventoryModels.Dtos;
-using InventoryModels.DTOs;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace InventoryDatabaseLayer
 {
-    internal interface IItemsRepo
+    public interface IItemsRepo
     {
         List<ItemDto> GetItems();
         List<ItemDto> GetItemsByDateRange(DateTime startDate, DateTime endDate);

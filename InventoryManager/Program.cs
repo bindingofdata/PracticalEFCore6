@@ -5,7 +5,6 @@ using InventoryHelpers;
 
 using InventoryModels;
 using InventoryModels.Dtos;
-using InventoryModels.DTOs;
 
 using libDB;
 

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\libDB\libDB.csproj" />
+    <ProjectReference Include="..\InventoryDatabaseLayer\InventoryDatabaseLayer.csproj" />
   </ItemGroup>
 
 </Project>

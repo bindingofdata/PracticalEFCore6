@@ -1,12 +1,16 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 
+using InventoryModels;
 using InventoryModels.Dtos;
 
 using libDB;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+
+using System.Diagnostics;
 
 namespace InventoryDatabaseLayer
 {
@@ -21,16 +25,53 @@ namespace InventoryDatabaseLayer
             _mapper = mapper;
         }
 
+        public void DeleteItem(int id)
+        {
+            Item? item = _context.Items.FirstOrDefault(item => item.Id == id);
+            if (item == null)
+            {
+                return;
+            }
+            item.IsDeleted = true;
+            _context.SaveChanges();
+        }
+
+        public void DeleteItems(List<int> itemIds)
+        {
+            using (IDbContextTransaction transation = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    foreach (int itemId in itemIds)
+                    {
+                        DeleteItem(itemId);
+                    }
+
+                    transation.Commit();
+                }
+                catch (Exception ex)
+                {
+                    // log it:
+                    Debug.WriteLine(ex.ToString());
+                    transation.Rollback();
+                    throw ex;
+                }
+            }
+        }
+
         public List<GetItemsForListingDto> GetItemListingFromProcedure()
         {
             return _context.ItemsForListing.FromSqlRaw("EXECUTE dbo.GetItemsForListing")
                 .ToList();
         }
 
-        public List<ItemDto> GetItems()
+        public List<Item> GetItems()
         {
             return _context.Items
-                .ProjectTo<ItemDto>(_mapper.ConfigurationProvider)
+                .Include(item => item.Category)
+                .AsEnumerable()
+                .Where(item => !item.IsDeleted)
+                .OrderBy(item => item.Name)
                 .ToList();
         }
 
@@ -60,6 +101,95 @@ namespace InventoryDatabaseLayer
                 .ThenBy(item => item.GenreName)
                 .ThenBy(item => item.Category)
                 .ToList();
+        }
+
+        public int UpsertItem(Item item)
+        {
+            if (item.Id > 0)
+            {
+                return UpdateItem(item);
+            }
+
+            return CreateItem(item);
+        }
+
+        public void UpsertItems(List<Item> items)
+        {
+            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    foreach (Item item in items)
+                    {
+                        bool success = UpsertItem(item) > 0;
+                        if (!success)
+                        {
+                            throw new Exception($"ERROR saving the item {item.Name}");
+                        }
+
+                        transaction.Commit();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // log it:
+                    Debug.WriteLine(ex.ToString());
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        private int CreateItem(Item item)
+        {
+            _context.Items.Add(item);
+            _context.SaveChanges();
+            Item? newItem = _context.Items.ToList()
+                .FirstOrDefault(currentItem => currentItem.Name.ToLower().Equals(item.Name.ToLower()));
+            
+            if (newItem == null)
+            {
+                throw new Exception("Could not Create the item as expected.");
+            }
+
+            return newItem.Id;
+        }
+
+        private int UpdateItem(Item item)
+        {
+            Item? dbItem = _context.Items
+                .Include(item => item.Category)
+                .Include(item => item.ItemGenres)
+                .Include(item => item.Players)
+                .FirstOrDefault(currentItem => currentItem.Id == item.Id);
+
+            if (dbItem == null)
+            {
+                throw new Exception("Item not found");
+            }
+
+            dbItem.CategoryId = item.CategoryId;
+            dbItem.CurrentOrFinalPrice = item.CurrentOrFinalPrice;
+            dbItem.Description = item.Description;
+            dbItem.IsActive = item.IsActive;
+            dbItem.IsDeleted = item.IsDeleted;
+            dbItem.IsOnSale = item.IsOnSale;
+            if (item.ItemGenres != null)
+            {
+                dbItem.ItemGenres = item.ItemGenres;
+            }
+            dbItem.Name = item.Name;
+            dbItem.Notes = item.Notes;
+            if (item.Players != null)
+            {
+                dbItem.Players = item.Players;
+            }
+            dbItem.PurchasedDate = item.PurchasedDate;
+            dbItem.PurchasePrice = item.PurchasePrice;
+            dbItem.Quantity = item.Quantity;
+            dbItem.SoldDate = item.SoldDate;
+            _context.SaveChanges();
+            return item.Id;
         }
     }
 }

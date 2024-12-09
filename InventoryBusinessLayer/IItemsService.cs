@@ -1,4 +1,5 @@
 ﻿using InventoryModels.Dtos;
+using InventoryModels.DTOs;
 
 using System;
 using System.Collections.Generic;
@@ -16,5 +17,9 @@ namespace InventoryBusinessLayer
         List<GetItemsTotalValueDto> GetItemsTotalValue(bool isActive);
         string GetAllItemsPipeDelimitedString();
         List<FullItemDetailsDto> GetItemsWithGenresAndCategories();
+        int UpsertItem(CreateOrUpdateItemDTO item);
+        void UpsertItems(List<CreateOrUpdateItemDTO> items);
+        void DeleteItem(int id);
+        void DeleteItems(List<int> ItemIds);
     }
 }

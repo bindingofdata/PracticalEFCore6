@@ -3,16 +3,44 @@ using InventoryDatabaseLayer;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using libDB;
 using AutoMapper;
+using InventoryModels.DTOs;
+using InventoryModels;
+using System.Diagnostics;
 
 namespace InventoryBusinessLayer
 {
     public class ItemsService : IItemsService
     {
         private readonly IItemsRepo _dbRepo;
+        private readonly IMapper _mapper;
 
         public ItemsService(InventoryDbContext context, IMapper mapper)
         {
             _dbRepo = new ItemsRepo(context, mapper);
+            _mapper = mapper;
+        }
+
+        public void DeleteItem(int id)
+        {
+            if (id <= 0)
+            {
+                throw new ArgumentException("Please set a valid id before deleting");
+            }
+            _dbRepo.DeleteItem(id);
+        }
+
+        public void DeleteItems(List<int> ItemIds)
+        {
+            try
+            {
+                _dbRepo.DeleteItems(ItemIds);
+            }
+            catch (Exception ex)
+            {
+                // TODO: better logging/not squelching
+                Debug.WriteLine($"The transaction has failed: {ex.Message}");
+                throw;
+            }
         }
 
         public string GetAllItemsPipeDelimitedString()
@@ -22,7 +50,7 @@ namespace InventoryBusinessLayer
 
         public List<ItemDto> GetItems()
         {
-            return _dbRepo.GetItems();
+            return _mapper.Map<List<ItemDto>>(_dbRepo.GetItems());
         }
 
         public List<ItemDto> GetItemsByDateRange(DateTime startDate, DateTime endDate)
@@ -43,6 +71,29 @@ namespace InventoryBusinessLayer
         public List<FullItemDetailsDto> GetItemsWithGenresAndCategories()
         {
             return _dbRepo.GetItemsWithGenresAndCategories();
+        }
+
+        public int UpsertItem(CreateOrUpdateItemDTO item)
+        {
+            if (item.CategoryId <= 0)
+            {
+                throw new ArgumentException("Please set the category ID before insert or update");
+            }
+            return _dbRepo.UpsertItem(_mapper.Map<Item>(item));
+        }
+
+        public void UpsertItems(List<CreateOrUpdateItemDTO> items)
+        {
+            try
+            {
+                _dbRepo.UpsertItems(_mapper.Map<List<Item>>(items));
+            }
+            catch (Exception ex)
+            {
+                // TODO: better logging/not squelching
+                Debug.WriteLine($"The transaction has failed: {ex.Message}");
+                throw;
+            }
         }
     }
 }

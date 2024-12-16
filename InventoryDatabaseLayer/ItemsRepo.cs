@@ -126,9 +126,9 @@ namespace InventoryDatabaseLayer
                         {
                             throw new Exception($"ERROR saving the item {item.Name}");
                         }
-
-                        transaction.Commit();
                     }
+
+                    transaction.Commit();
                 }
                 catch (Exception ex)
                 {

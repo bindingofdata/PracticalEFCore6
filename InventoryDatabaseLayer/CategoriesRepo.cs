@@ -52,12 +52,11 @@ namespace InventoryDatabaseLayer
                     {
                         DeleteCategory(catId);
                     }
-
                     transaction.Commit();
                 }
                 catch (Exception ex)
                 {
-                    // log int:
+                    // log it:
                     Debug.WriteLine(ex.ToString());
                     transaction.Rollback();
                     throw;
@@ -89,7 +88,7 @@ namespace InventoryDatabaseLayer
             Category? newCategory = _context.Categories.ToList()
                 .FirstOrDefault(currentCat => currentCat.Name.ToLower().Equals(category.Name.ToLower()));
 
-            if (newCategory != null)
+            if (newCategory == null)
             {
                 throw new Exception("Could not Create the category as expected.");
             }
@@ -137,9 +136,8 @@ namespace InventoryDatabaseLayer
                         {
                             throw new Exception($"ERROR saving the category {category.Name}");
                         }
-
-                        transaction.Commit();
                     }
+                    transaction.Commit();
                 }
                 catch (Exception ex)
                 {

@@ -7,6 +7,7 @@ using InventoryHelpers;
 
 using InventoryModels;
 using InventoryModels.Dtos;
+using InventoryModels.DTOs;
 
 using libDB;
 
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using System.Net.NetworkInformation;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace InventoryManager
@@ -29,6 +31,7 @@ namespace InventoryManager
         private static IServiceProvider _serviceProvider;
         private static IItemsService _itemsService;
         private static ICategoriesService _categoriesService;
+        private static List<CategoryDto> _categories;
 
         public static void Main(string[] args)
         {
@@ -38,26 +41,104 @@ namespace InventoryManager
             {
                 _itemsService = new ItemsService(db, _mapper);
                 _categoriesService = new CategoriesService(db, _mapper);
-                PrintSectionHeader(nameof(ListInventory));
-                ListInventory();
+                _categories = GetCategories();
+                //PrintSectionHeader(nameof(ListInventory));
+                //ListInventory();
 
-                PrintSectionHeader(nameof(GetItemsForListing));
-                GetItemsForListing();
+                //PrintSectionHeader(nameof(GetItemsForListing));
+                //GetItemsForListing();
 
-                PrintSectionHeader(nameof(GetAllItemsAsPipeDelimitedString));
-                GetAllItemsAsPipeDelimitedString();
+                //PrintSectionHeader(nameof(GetAllItemsAsPipeDelimitedString));
+                //GetAllItemsAsPipeDelimitedString();
 
-                PrintSectionHeader(nameof(GetItemsTotalValues));
-                GetItemsTotalValues();
+                //PrintSectionHeader(nameof(GetItemsTotalValues));
+                //GetItemsTotalValues();
 
-                PrintSectionHeader(nameof(GetFullitemDetails));
-                GetFullitemDetails();
+                //PrintSectionHeader(nameof(GetFullitemDetails));
+                //GetFullitemDetails();
 
-                PrintSectionHeader(nameof(ListInventoryLinq));
-                ListInventoryLinq();
+                //PrintSectionHeader(nameof(ListInventoryLinq));
+                //ListInventoryLinq();
 
-                PrintSectionHeader(nameof(ListCategoriesAndColors));
-                ListCategoriesAndColors();
+                //PrintSectionHeader(nameof(ListCategoriesAndColors));
+                //ListCategoriesAndColors();
+                bool exit = false;
+                while (!exit)
+                {
+                    Console.WriteLine("1. [C]reate items");
+                    Console.WriteLine("2. [R]etrieve items");
+                    Console.WriteLine("3. [U]pdate items");
+                    Console.WriteLine("4. [D]elete items");
+                    switch (Console.ReadLine().ToLower())
+                    {
+                        case "1":
+                        case "c":
+                            Console.Clear();
+                            Console.WriteLine("Adding new Item(s)");
+                            CreateMultipleItems();
+                            Console.WriteLine("Items added");
+                            List<ItemDto> inventory = _itemsService.GetItems();
+                            inventory.ForEach(item => Console.WriteLine($"Item: {item}"));
+                            break;
+                        default:
+                            exit = true;
+                            break;
+                    }
+                }
+            }
+        }
+
+        private static void CreateMultipleItems()
+        {
+            Console.WriteLine("Would you like to create items as a batch?");
+            bool batchCreate = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
+            List<CreateOrUpdateItemDTO> allItems = new List<CreateOrUpdateItemDTO>();
+
+            bool createAnother = true;
+            while (createAnother)
+            {
+                CreateOrUpdateItemDTO newItem = new CreateOrUpdateItemDTO();
+                Console.WriteLine("Creating new item.");
+                Console.WriteLine("Enter item name.");
+                newItem.Name = Console.ReadLine();
+                Console.WriteLine("Enter item description.");
+                newItem.Description = Console.ReadLine();
+                Console.WriteLine("Enter any notes.");
+                newItem.Notes = Console.ReadLine();
+                Console.WriteLine("Enter the Category: [B]ooks, [M]ovies, [G]ames");
+                newItem.CategoryId = GetCategoryId(Console.ReadLine().Substring(0, 1).ToUpper());
+
+                if (!batchCreate)
+                {
+                    _itemsService.UpsertItem(newItem);
+                }
+                else
+                {
+                    allItems.Add(newItem);
+                }
+
+                Console.WriteLine("Would you like to create another item?");
+                createAnother = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
+
+                if (batchCreate && !createAnother)
+                {
+                    _itemsService.UpsertItems(allItems);
+                }
+            }
+        }
+
+        private static int GetCategoryId(string input)
+        {
+            switch (input)
+            {
+                case "B":
+                    return _categories.FirstOrDefault(catDto => catDto.Category.ToLower().Equals("books"))?.Id ?? -1;
+                case "M":
+                    return _categories.FirstOrDefault(catDto => catDto.Category.ToLower().Equals("movies"))?.Id ?? -1;
+                case "G":
+                    return _categories.FirstOrDefault(catDto => catDto.Category.ToLower().Equals("games"))?.Id ?? -1;
+                default:
+                    return -1;
             }
         }
 
@@ -165,10 +246,15 @@ namespace InventoryManager
 
         private static void ListCategoriesAndColors()
         {
-            foreach (CategoryDto category in _categoriesService.ListCategoriesAndDetails())
+            foreach (CategoryDto category in _categories)
             {
                 Console.WriteLine($"Category [{category.Category}] is {category.CategoryDetail.Color}");
             }
+        }
+
+        private static List<CategoryDto> GetCategories()
+        {
+            return _categoriesService.ListCategoriesAndDetails();
         }
 
         private static string _systemId = Environment.MachineName;

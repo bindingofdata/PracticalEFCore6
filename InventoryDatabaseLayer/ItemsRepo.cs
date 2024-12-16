@@ -54,7 +54,7 @@ namespace InventoryDatabaseLayer
                     // log it:
                     Debug.WriteLine(ex.ToString());
                     transation.Rollback();
-                    throw ex;
+                    throw;
                 }
             }
         }

@@ -3,7 +3,7 @@ using InventoryDatabaseLayer;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using libDB;
 using AutoMapper;
-using InventoryModels.DTOs;
+using InventoryModels.Dtos;
 using InventoryModels;
 using System.Diagnostics;
 
@@ -73,7 +73,7 @@ namespace InventoryBusinessLayer
             return _dbRepo.GetItemsWithGenresAndCategories();
         }
 
-        public int UpsertItem(CreateOrUpdateItemDTO item)
+        public int UpsertItem(CreateOrUpdateItemDto item)
         {
             if (item.CategoryId <= 0)
             {
@@ -82,7 +82,7 @@ namespace InventoryBusinessLayer
             return _dbRepo.UpsertItem(_mapper.Map<Item>(item));
         }
 
-        public void UpsertItems(List<CreateOrUpdateItemDTO> items)
+        public void UpsertItems(List<CreateOrUpdateItemDto> items)
         {
             try
             {

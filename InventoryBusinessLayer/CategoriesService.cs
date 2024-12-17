@@ -45,6 +45,8 @@ namespace InventoryBusinessLayer
             {
                 throw new ArgumentException("Please set a valid ID");
             }
+
+            _dbRepo.DeleteCategory(id);
         }
 
         public List<CategoryDto> ListCategoriesAndDetails()

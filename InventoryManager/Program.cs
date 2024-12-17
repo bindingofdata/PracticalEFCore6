@@ -44,6 +44,7 @@ namespace InventoryManager
                 _categoriesService = new CategoriesService(db, _mapper);
                 _playersService = new PlayersService(db, _mapper);
                 _categories = GetCategories();
+                _players = GetPlayers();
                 //PrintSectionHeader(nameof(ListInventory));
                 //ListInventory();
 

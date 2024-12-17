@@ -8,7 +8,6 @@ using AutoMapper;
 
 using InventoryModels;
 using InventoryModels.Dtos;
-using InventoryModels.DTOs;
 
 namespace InventoryManager
 {
@@ -36,9 +35,12 @@ namespace InventoryManager
                 .ForMember(catDetail => catDetail.ColorName, opt => opt.MapFrom(catDetailDto => catDetailDto.Color))
                 .ForMember(catDetail => catDetail.ColorValue, opt => opt.MapFrom(catDetailDto => catDetailDto.Value));
 
-            CreateMap<Item, CreateOrUpdateItemDTO>()
+            CreateMap<Item, CreateOrUpdateItemDto>()
                 .ReverseMap()
                 .ForMember(item => item.Category, memberOptions => memberOptions.Ignore());
+
+            CreateMap<Player, PlayerDto>()
+                .ReverseMap();
         }
     }
 }

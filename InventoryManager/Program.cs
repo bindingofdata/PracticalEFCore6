@@ -7,7 +7,6 @@ using InventoryHelpers;
 
 using InventoryModels;
 using InventoryModels.Dtos;
-using InventoryModels.DTOs;
 
 using libDB;
 
@@ -31,7 +30,9 @@ namespace InventoryManager
         private static IServiceProvider _serviceProvider;
         private static IItemsService _itemsService;
         private static ICategoriesService _categoriesService;
+        private static IPlayersService _playersService;
         private static List<CategoryDto> _categories;
+        private static List<PlayerDto> _players;
 
         public static void Main(string[] args)
         {
@@ -41,6 +42,7 @@ namespace InventoryManager
             {
                 _itemsService = new ItemsService(db, _mapper);
                 _categoriesService = new CategoriesService(db, _mapper);
+                _playersService = new PlayersService(db, _mapper);
                 _categories = GetCategories();
                 //PrintSectionHeader(nameof(ListInventory));
                 //ListInventory();
@@ -92,12 +94,12 @@ namespace InventoryManager
         {
             Console.WriteLine("Would you like to create items as a batch?");
             bool batchCreate = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
-            List<CreateOrUpdateItemDTO> allItems = new List<CreateOrUpdateItemDTO>();
+            List<CreateOrUpdateItemDto> allItems = new List<CreateOrUpdateItemDto>();
 
             bool createAnother = true;
             while (createAnother)
             {
-                CreateOrUpdateItemDTO newItem = new CreateOrUpdateItemDTO();
+                CreateOrUpdateItemDto newItem = new CreateOrUpdateItemDto();
                 Console.WriteLine("Creating new item.");
                 Console.WriteLine("Enter item name.");
                 newItem.Name = Console.ReadLine();
@@ -107,6 +109,7 @@ namespace InventoryManager
                 newItem.Notes = Console.ReadLine();
                 Console.WriteLine("Enter the Category: [B]ooks, [M]ovies, [G]ames");
                 newItem.CategoryId = GetCategoryId(Console.ReadLine().Substring(0, 1).ToUpper());
+                newItem.Players = AddPlayers(batchCreate);
 
                 if (!batchCreate)
                 {
@@ -120,11 +123,55 @@ namespace InventoryManager
                 Console.WriteLine("Would you like to create another item?");
                 createAnother = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
 
-                if (batchCreate && !createAnother)
+                if (!createAnother && batchCreate)
                 {
                     _itemsService.UpsertItems(allItems);
                 }
             }
+        }
+
+        private static List<Player> AddPlayers(bool batchCreate)
+        {
+            List<Player> players = new List<Player>();
+            List<Player> newPlayers = new List<Player>();
+            Console.WriteLine("Add a player?");
+            bool createAnother = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
+            while (createAnother)
+            {
+                Console.WriteLine("Enter player name.");
+                string playerName = Console.ReadLine();
+                Player newPlayer = _mapper.Map<Player>(_players.FirstOrDefault(player => player.Name.Equals(playerName, StringComparison.OrdinalIgnoreCase)));
+                if (newPlayer == null)
+                {
+                    newPlayer = new Player();
+                    newPlayer.Name = playerName;
+                    Console.WriteLine("Enter a description.");
+                    newPlayer.Description = Console.ReadLine();
+                    newPlayer.IsDeleted = false;
+                    newPlayer.IsActive = true;
+                    newPlayer.CreatedDate = DateTime.Now;
+
+                    if (!batchCreate)
+                    {
+                        _playersService.UpsertPlayer(newPlayer);
+                    }
+                    else
+                    {
+                        newPlayers.Add(newPlayer);
+                    }
+                }
+                players.Add(newPlayer);
+
+                Console.WriteLine("Would you like to add another player?");
+                createAnother = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
+
+                if (!createAnother && batchCreate)
+                {
+                    _playersService.UpsertPlayers(newPlayers);
+                }
+            }
+
+            return players;
         }
 
         private static int GetCategoryId(string input)
@@ -161,6 +208,17 @@ namespace InventoryManager
             _mapper = _mapperConfiguration.CreateMapper();
         }
 
+        private static List<CategoryDto> GetCategories()
+        {
+            return _categoriesService.ListCategoriesAndDetails();
+        }
+
+        private static List<PlayerDto> GetPlayers()
+        {
+            return _playersService.GetPlayers();
+        }
+
+        #region Tutorial Methods
         private static void PrintSectionHeader(string sectionName)
         {
             Console.WriteLine();
@@ -251,11 +309,7 @@ namespace InventoryManager
                 Console.WriteLine($"Category [{category.Category}] is {category.CategoryDetail.Color}");
             }
         }
-
-        private static List<CategoryDto> GetCategories()
-        {
-            return _categoriesService.ListCategoriesAndDetails();
-        }
+        #endregion
 
         private static string _systemId = Environment.MachineName;
         private static string _loggedInUserId = Environment.UserName;

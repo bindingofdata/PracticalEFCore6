@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InventoryModels.DTOs
+namespace InventoryModels.Dtos
 {
-    public class CreateOrUpdateItemDTO
+    public class CreateOrUpdateItemDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

@@ -15,6 +15,9 @@ namespace InventoryModels.Dtos
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
         public string Notes { get; set; }
+        public decimal? PurchasePrice { get; set; }
+        public decimal? CurrentOrFinalPrice { get; set; }
+        public int Quantity { get; set; }
         public string CategoryName { get; set; }
         public DateTime CreatedDate { get; set; }
 

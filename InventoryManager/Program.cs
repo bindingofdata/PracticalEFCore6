@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
+using System.Security.Authentication;
 using System.Text;
 
 namespace InventoryManager
@@ -102,14 +103,20 @@ namespace InventoryManager
             {
                 CreateOrUpdateItemDto newItem = new CreateOrUpdateItemDto();
                 Console.WriteLine("Creating new item.");
+                Console.WriteLine("Enter the Category: [B]ooks, [M]ovies, [G]ames");
+                newItem.CategoryId = GetCategoryId(Console.ReadLine().Substring(0, 1).ToUpper());
                 Console.WriteLine("Enter item name.");
                 newItem.Name = Console.ReadLine();
                 Console.WriteLine("Enter item description.");
                 newItem.Description = Console.ReadLine();
+                Console.WriteLine("Enter purchase price.");
+                newItem.PurchasePrice = GetDecimalFromUser();
+                Console.WriteLine("Enter current or final price.");
+                newItem.CurrentOrFinalPrice = GetDecimalFromUser();
+                Console.WriteLine("Enter purchase quantity.");
+                newItem.Quantity = GetIntFromUser();
                 Console.WriteLine("Enter any notes.");
                 newItem.Notes = Console.ReadLine();
-                Console.WriteLine("Enter the Category: [B]ooks, [M]ovies, [G]ames");
-                newItem.CategoryId = GetCategoryId(Console.ReadLine().Substring(0, 1).ToUpper());
                 newItem.Players = AddPlayers(batchCreate);
 
                 if (!batchCreate)
@@ -188,6 +195,28 @@ namespace InventoryManager
                 default:
                     return -1;
             }
+        }
+
+        private static decimal GetDecimalFromUser()
+        {
+            decimal result;
+            while (!decimal.TryParse(Console.ReadLine(), out result))
+            {
+                Console.WriteLine("Enter a valid price. eg. 3.99");
+            }
+
+            return result;
+        }
+
+        private static int GetIntFromUser()
+        {
+            int result;
+            while (!int.TryParse(Console.ReadLine(), out result))
+            {
+                Console.WriteLine("Enter a valid whole number.");
+            }
+
+            return result;
         }
 
         private static void BuildOptions()

@@ -5,12 +5,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Configuration;
 
+using System.Text;
+
 namespace libDB
 {
     public class InventoryDbContext : DbContext
     {
         private static IConfigurationRoot _configRoot;
-        private static string _systemId = Environment.MachineName;
+        private static string _systemId = Convert.ToBase64String(Encoding.UTF8.GetBytes(Environment.UserName));
         private const string SEED_USER_ID = "873fb5cd-ad6b-458d-ab59-3c5eca45a368";
 
         public DbSet<Item> Items { get; set; }

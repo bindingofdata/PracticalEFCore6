@@ -14,6 +14,7 @@ namespace InventoryModels.Dtos
         public int CategoryId { get; set; }
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
+        public bool IsOnSale { get; set; }
         public string Notes { get; set; }
         public decimal? PurchasePrice { get; set; }
         public decimal? CurrentOrFinalPrice { get; set; }

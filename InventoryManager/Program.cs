@@ -73,6 +73,7 @@ namespace InventoryManager
                     Console.WriteLine("2. [R]etrieve items");
                     Console.WriteLine("3. [U]pdate items");
                     Console.WriteLine("4. [D]elete items");
+                    Console.WriteLine("5. [E]xit");
                     switch (Console.ReadLine().ToLower())
                     {
                         case "1":
@@ -81,21 +82,29 @@ namespace InventoryManager
                             Console.WriteLine("Adding new Item(s)");
                             CreateMultipleItems();
                             Console.WriteLine("Items added");
-                            List<ItemDto> inventory = _itemsService.GetItems();
-                            inventory.ForEach(item => Console.WriteLine($"Item: {item}"));
+                            PrintAllItems();
+                            break;
+                        case "3":
+                        case "u":
+                            Console.Clear();
+                            Console.WriteLine("Updating Item(s)");
+                            UpdateMultipleItems();
+                            Console.WriteLine("Items updated");
+                            PrintAllItems();
                             break;
                         default:
                             exit = true;
                             break;
                     }
+                    Console.Clear();
                 }
             }
         }
 
         private static void CreateMultipleItems()
         {
-            Console.WriteLine("Would you like to create items as a batch?");
-            bool batchCreate = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
+            Console.WriteLine("Would you like to create items as a batch? y/n");
+            bool batchCreate = GetBoolFromUser();
             List<CreateOrUpdateItemDto> allItems = new List<CreateOrUpdateItemDto>();
 
             bool createAnother = true;
@@ -103,12 +112,11 @@ namespace InventoryManager
             {
                 CreateOrUpdateItemDto newItem = new CreateOrUpdateItemDto();
                 Console.WriteLine("Creating new item.");
-                Console.WriteLine("Enter the Category: [B]ooks, [M]ovies, [G]ames");
-                newItem.CategoryId = GetCategoryId(Console.ReadLine().Substring(0, 1).ToUpper());
                 Console.WriteLine("Enter item name.");
                 newItem.Name = Console.ReadLine();
                 Console.WriteLine("Enter item description.");
                 newItem.Description = Console.ReadLine();
+                newItem.CategoryId = GetCategoryId();
                 Console.WriteLine("Enter purchase price.");
                 newItem.PurchasePrice = GetDecimalFromUser();
                 Console.WriteLine("Enter current or final price.");
@@ -119,6 +127,10 @@ namespace InventoryManager
                 newItem.Notes = Console.ReadLine();
                 newItem.Players = AddPlayers(batchCreate);
 
+                newItem.IsActive = true;
+                newItem.IsDeleted = false;
+                newItem.IsOnSale = false;
+
                 if (!batchCreate)
                 {
                     _itemsService.UpsertItem(newItem);
@@ -128,10 +140,89 @@ namespace InventoryManager
                     allItems.Add(newItem);
                 }
 
-                Console.WriteLine("Would you like to create another item?");
-                createAnother = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
+                Console.WriteLine("Would you like to create another item? y/n");
+                createAnother = GetBoolFromUser();
 
                 if (!createAnother && batchCreate)
+                {
+                    _itemsService.UpsertItems(allItems);
+                }
+            }
+        }
+
+        private static void UpdateMultipleItems()
+        {
+            Console.WriteLine("Would you like to update items as a batch? y/n");
+            bool batchUpdate = GetBoolFromUser();
+            List<CreateOrUpdateItemDto> allItems = new List<CreateOrUpdateItemDto>();
+
+            bool updateAnother = true;
+            while (updateAnother)
+            {
+                Console.WriteLine("Enter the ID number to update.");
+                Console.WriteLine(_sectionSeparator);
+                List<ItemDto> items = _itemsService.GetItems()
+                    .OrderBy(item => item.Name)
+                    .ToList();
+                items.ForEach(item =>
+                Console.WriteLine($"ID: {item.Id} | {item.Name}"));
+                Console.WriteLine(_sectionSeparator);
+
+                Console.Write("ID to update: ");
+                int id = GetIntFromUser();
+
+                ItemDto? itemMatch = items.FirstOrDefault(item => item.Id == id);
+                if (itemMatch != null)
+                {
+                    CreateOrUpdateItemDto updateItem =
+                        _mapper.Map<CreateOrUpdateItemDto>(_mapper.Map<Item>(itemMatch));
+                    Console.WriteLine("Leave fields blank to keep current values.");
+                    // string fields
+                    Console.WriteLine("Enter new item name.");
+                    string userStringInput = Console.ReadLine();
+                    updateItem.Name = !string.IsNullOrWhiteSpace(userStringInput) ? userStringInput : updateItem.Name;
+                    Console.WriteLine("Enter new item description.");
+                    userStringInput = Console.ReadLine();
+                    updateItem.Description = !string.IsNullOrWhiteSpace(userStringInput) ? userStringInput : updateItem.Description;
+                    Console.WriteLine("Enter new item notes.");
+                    userStringInput = Console.ReadLine();
+                    updateItem.Notes = !string.IsNullOrWhiteSpace(userStringInput) ? userStringInput : updateItem.Notes;
+
+                    // numeric fields
+                    int userIntInput = GetCategoryId();
+                    updateItem.CategoryId = userIntInput >= 0 ? userIntInput : updateItem.CategoryId;
+                    Console.WriteLine("Enter new item quantity.");
+                    userIntInput = GetIntFromUser();
+                    updateItem.Quantity = userIntInput >= 0 ? userIntInput : updateItem.Quantity;
+                    Console.WriteLine("Enter new item purchase price.");
+                    decimal userDecInput = GetDecimalFromUser();
+                    updateItem.PurchasePrice = userDecInput >= 0.0M ? userDecInput : updateItem.PurchasePrice;
+                    Console.WriteLine("Enter new item current or final price.");
+                    userDecInput = GetDecimalFromUser();
+                    updateItem.CurrentOrFinalPrice = userDecInput >= 0.0M ? userDecInput : updateItem.CurrentOrFinalPrice;
+
+                    // boolean fields
+                    Console.WriteLine("Is item active? y/n");
+                    updateItem.IsActive = GetBoolFromUser();
+                    Console.WriteLine("Is item deleted? y/n");
+                    updateItem.IsDeleted = GetBoolFromUser();
+                    Console.WriteLine("Is item on sale? y/n");
+                    updateItem.IsOnSale = GetBoolFromUser();
+
+                    if (!batchUpdate)
+                    {
+                        _itemsService.UpsertItem(updateItem);
+                    }
+                    else
+                    {
+                        allItems.Add(updateItem);
+                    }
+                }
+
+                Console.WriteLine("Would you like to update another? y/n");
+                updateAnother = GetBoolFromUser();
+
+                if (!updateAnother && batchUpdate)
                 {
                     _itemsService.UpsertItems(allItems);
                 }
@@ -182,25 +273,63 @@ namespace InventoryManager
             return players;
         }
 
-        private static int GetCategoryId(string input)
+        private static void PrintAllItems()
         {
-            switch (input)
+            List<ItemDto> inventory = _itemsService.GetItems();
+            inventory.ForEach(item => Console.WriteLine($"Item: {item}"));
+            Console.WriteLine("Press any key to continue...");
+            _ = Console.ReadLine();
+        }
+
+        private static int GetCategoryId()
+        {
+            bool validInput = false;
+            int categoryId = -1;
+
+            while (!validInput)
             {
-                case "B":
-                    return _categories.FirstOrDefault(catDto => catDto.Category.ToLower().Equals("books"))?.Id ?? -1;
-                case "M":
-                    return _categories.FirstOrDefault(catDto => catDto.Category.ToLower().Equals("movies"))?.Id ?? -1;
-                case "G":
-                    return _categories.FirstOrDefault(catDto => catDto.Category.ToLower().Equals("games"))?.Id ?? -1;
-                default:
+                Console.WriteLine("Enter the Category: [B]ooks, [M]ovies, [G]ames");
+                string input = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(input))
+                {
                     return -1;
+                }
+
+                switch (input.Substring(0, 1).ToUpper())
+                {
+                    case "B":
+                        categoryId = _categories.FirstOrDefault(catDto => catDto.Category.ToLower().Equals("books"))?.Id ?? -1;
+                        validInput = true;
+                        break;
+                    case "M":
+                        categoryId = _categories.FirstOrDefault(catDto => catDto.Category.ToLower().Equals("movies"))?.Id ?? -1;
+                        validInput = true;
+                        break;
+                    case "G":
+                        categoryId = _categories.FirstOrDefault(catDto => catDto.Category.ToLower().Equals("games"))?.Id ?? -1;
+                        validInput = true;
+                        break;
+                    default:
+                        Console.Clear();
+                        Console.WriteLine("Enter a valid category");
+                        validInput = false;
+                        break;
+                }
             }
+
+            return categoryId;
         }
 
         private static decimal GetDecimalFromUser()
         {
             decimal result;
-            while (!decimal.TryParse(Console.ReadLine(), out result))
+            string userInput = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(userInput))
+            {
+                return -1M;
+            }
+
+            while (!decimal.TryParse(userInput, out result))
             {
                 Console.WriteLine("Enter a valid price. eg. 3.99");
             }
@@ -211,12 +340,30 @@ namespace InventoryManager
         private static int GetIntFromUser()
         {
             int result;
-            while (!int.TryParse(Console.ReadLine(), out result))
+            string userInput = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(userInput))
+            {
+                return -1;
+            }
+
+            while (!int.TryParse(userInput, out result))
             {
                 Console.WriteLine("Enter a valid whole number.");
             }
 
             return result;
+        }
+
+        private static bool GetBoolFromUser()
+        {
+            string userInput = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(userInput) ||
+                !userInput.StartsWith("y", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private static void BuildOptions()

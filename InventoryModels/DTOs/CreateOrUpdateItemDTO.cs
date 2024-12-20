@@ -18,6 +18,7 @@ namespace InventoryModels.Dtos
         public int CategoryId { get; set; }
         public bool IsActive { get; set; }
         public bool IsDeleted { get; set; }
+        public bool IsOnSale { get; set; }
 
         public List<Player> Players { get; set; }
         public List<ItemGenre> ItemGenres { get; set; }

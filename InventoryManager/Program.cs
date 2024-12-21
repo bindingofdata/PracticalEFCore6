@@ -82,7 +82,7 @@ namespace InventoryManager
                             Console.WriteLine("Adding new Item(s)");
                             CreateMultipleItems();
                             Console.WriteLine("Items added");
-                            PrintAllItems();
+                            PrintAllItems(true, false);
                             break;
                         case "3":
                         case "u":
@@ -90,7 +90,15 @@ namespace InventoryManager
                             Console.WriteLine("Updating Item(s)");
                             UpdateMultipleItems();
                             Console.WriteLine("Items updated");
-                            PrintAllItems();
+                            PrintAllItems(true, false);
+                            break;
+                        case "4":
+                        case "d":
+                            Console.Clear();
+                            Console.WriteLine("Deleting Item(s)");
+                            DeleteMultipleItems();
+                            Console.WriteLine("Items deleted");
+                            PrintAllItems(false, false);
                             break;
                         default:
                             exit = true;
@@ -161,11 +169,7 @@ namespace InventoryManager
             {
                 Console.WriteLine("Enter the ID number to update.");
                 Console.WriteLine(_sectionSeparator);
-                List<ItemDto> items = _itemsService.GetItems()
-                    .OrderBy(item => item.Name)
-                    .ToList();
-                items.ForEach(item =>
-                Console.WriteLine($"ID: {item.Id} | {item.Name}"));
+                List<ItemDto> items = PrintAllItems(true, true);
                 Console.WriteLine(_sectionSeparator);
 
                 Console.Write("ID to update: ");
@@ -204,8 +208,6 @@ namespace InventoryManager
                     // boolean fields
                     Console.WriteLine("Is item active? y/n");
                     updateItem.IsActive = GetBoolFromUser();
-                    Console.WriteLine("Is item deleted? y/n");
-                    updateItem.IsDeleted = GetBoolFromUser();
                     Console.WriteLine("Is item on sale? y/n");
                     updateItem.IsOnSale = GetBoolFromUser();
 
@@ -219,12 +221,66 @@ namespace InventoryManager
                     }
                 }
 
-                Console.WriteLine("Would you like to update another? y/n");
+                Console.WriteLine("Would you like to update another item? y/n");
                 updateAnother = GetBoolFromUser();
 
                 if (!updateAnother && batchUpdate)
                 {
                     _itemsService.UpsertItems(allItems);
+                }
+            }
+        }
+
+        private static void DeleteMultipleItems()
+        {
+            Console.WriteLine("Would you like to delete items as a batch? y/n");
+            bool batchDelete = GetBoolFromUser();
+            List<ItemDto> allItems = new List<ItemDto>();
+
+            bool deleteAnother = true;
+            while (deleteAnother)
+            {
+                Console.WriteLine("Enter the ID number to delete.");
+                Console.WriteLine(_sectionSeparator);
+                List<ItemDto> items = PrintAllItems(true, true);
+                Console.WriteLine(_sectionSeparator);
+
+                Console.Write("ID to delete: ");
+                int id = GetIntFromUser();
+
+                ItemDto itemMatch = items.FirstOrDefault(item => item.Id == id);
+                if (itemMatch != null)
+                {
+                    if (batchDelete)
+                    {
+                        if (!allItems.Contains(itemMatch))
+                        {
+                            allItems.Add(itemMatch);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Are you sure you want to delete the item {itemMatch.Name} [{itemMatch.Id}]? y/n");
+                        if (GetBoolFromUser())
+                        {
+                            _itemsService.DeleteItem(id);
+                            Console.WriteLine("Item deleted");
+                        }
+                    }
+                }
+
+                Console.WriteLine("Would you like to delete another item? y/n");
+                deleteAnother = GetBoolFromUser();
+
+                if (!deleteAnother && batchDelete)
+                {
+                    Console.WriteLine("Are you sure you want to delete the following items? y/n");
+                    allItems.ForEach(item => Console.WriteLine($"Item: {itemMatch.Name} [{itemMatch.Id}]"));
+                    if (GetBoolFromUser())
+                    {
+                        _itemsService.DeleteItems(allItems.Select(item => item.Id).ToList());
+                        Console.WriteLine("Items deleted.");
+                    }
                 }
             }
         }
@@ -273,12 +329,23 @@ namespace InventoryManager
             return players;
         }
 
-        private static void PrintAllItems()
+        private static List<ItemDto> PrintAllItems(bool activeOnly, bool sortByName)
         {
-            List<ItemDto> inventory = _itemsService.GetItems();
-            inventory.ForEach(item => Console.WriteLine($"Item: {item}"));
-            Console.WriteLine("Press any key to continue...");
-            _ = Console.ReadLine();
+            IEnumerable<ItemDto> inventory = _itemsService.GetItems();
+            if (activeOnly)
+            {
+                inventory = inventory.Where(item => !item.IsDeleted);
+            }
+            if (sortByName)
+            {
+                inventory = inventory.OrderBy(item => item.Name);
+            }
+
+            foreach (ItemDto item in inventory)
+            {
+                Console.WriteLine($"ID: {item.Id} | {item.Name}");
+            }
+            return inventory.ToList();
         }
 
         private static int GetCategoryId()

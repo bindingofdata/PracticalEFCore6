@@ -3,6 +3,8 @@ using AutoMapper.QueryableExtensions;
 
 using InventoryBusinessLayer;
 
+using InventoryDatabaseLayer;
+
 using InventoryHelpers;
 
 using InventoryModels;
@@ -41,9 +43,9 @@ namespace InventoryManager
             BuildMapper();
             using (var db = new InventoryDbContext(_optionsBuilder.Options))
             {
-                _itemsService = new ItemsService(db, _mapper);
-                _categoriesService = new CategoriesService(db, _mapper);
-                _playersService = new PlayersService(db, _mapper);
+                _itemsService = new ItemsService(new ItemsRepo(db, _mapper), _mapper);
+                _categoriesService = new CategoriesService(new CategoriesRepo(db, _mapper), _mapper);
+                _playersService = new PlayersService(new PlayersRepo(db, _mapper), _mapper);
                 _categories = GetCategories();
                 _players = GetPlayers();
                 //PrintSectionHeader(nameof(ListInventory));

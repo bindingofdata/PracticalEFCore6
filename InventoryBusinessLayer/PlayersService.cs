@@ -18,11 +18,13 @@ namespace InventoryBusinessLayer
 {
     public class PlayersService : IPlayersService
     {
-        private readonly PlayersRepo _dbRepo;
+        private readonly IPlayersRepo _dbRepo;
+        private readonly IMapper _mapper;
 
-        public PlayersService(InventoryDbContext context, IMapper mapper)
+        public PlayersService(IPlayersRepo dbRepo, IMapper mapper)
         {
-            _dbRepo = new PlayersRepo(context, mapper);
+            _dbRepo = dbRepo;
+            _mapper = mapper;
         }
 
         public void DeletePlayer(int id)

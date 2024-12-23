@@ -16,11 +16,13 @@ namespace InventoryDatabaseLayer
 {
     public class GenreService : IGenresService
     {
-        private readonly GenresRepo _dbRepo;
+        private readonly IGenresRepo _dbRepo;
+        private readonly IMapper _mapper;
 
-        public GenreService(InventoryDbContext context, IMapper mapper)
+        public GenreService(IGenresRepo dbRepo, IMapper mapper)
         {
-            _dbRepo = new GenresRepo(context, mapper);
+            _dbRepo = dbRepo;
+            _mapper = mapper;
         }
 
         public void DeleteGenre(int id)

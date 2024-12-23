@@ -42,7 +42,6 @@ namespace InventoryManagerUnitTests
         [TestInitialize]
         public void InitializeTests()
         {
-            //_itemsService = new ItemsService();
             _itemsRepo = new Mock<IItemsRepo>();
             List<Item> items = new List<Item>()
             {
@@ -63,6 +62,7 @@ namespace InventoryManagerUnitTests
                 },
             };
             _itemsRepo.Setup(mock => mock.GetItems()).Returns(items);
+            _itemsService = new ItemsService(_itemsRepo.Object, _mapper);
         }
 
         [TestMethod]

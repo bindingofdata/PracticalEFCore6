@@ -14,9 +14,9 @@ namespace InventoryBusinessLayer
         private readonly IItemsRepo _dbRepo;
         private readonly IMapper _mapper;
 
-        public ItemsService(InventoryDbContext context, IMapper mapper)
+        public ItemsService(IItemsRepo dbRepo, IMapper mapper)
         {
-            _dbRepo = new ItemsRepo(context, mapper);
+            _dbRepo = dbRepo;
             _mapper = mapper;
         }
 

@@ -18,11 +18,13 @@ namespace InventoryBusinessLayer
 {
     public class CategoriesService : ICategoriesService
     {
-        private readonly CategoriesRepo _dbRepo;
+        private readonly ICategoriesRepo _dbRepo;
+        private readonly IMapper _mapper;
 
-        public CategoriesService(InventoryDbContext context, IMapper mapper)
+        public CategoriesService(ICategoriesRepo dbRepo, IMapper mapper)
         {
-            _dbRepo = new CategoriesRepo(context, mapper);
+            _dbRepo = dbRepo;
+            _mapper = mapper;
         }
 
         public void DeleteCategories(List<int> categoryIds)

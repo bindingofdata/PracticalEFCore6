@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace InventoryDatabaseLayer
 {
@@ -41,7 +42,12 @@ namespace InventoryDatabaseLayer
 
         public void DeleteGenres(List<int> genreIds)
         {
-            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions
+                {
+                    IsolationLevel = IsolationLevel.ReadCommitted,
+                }))
             {
                 try
                 {
@@ -49,13 +55,12 @@ namespace InventoryDatabaseLayer
                     {
                         DeleteGenre(genreId);
                     }
-                    transaction.Commit();
+                    scope.Complete();
                 }
                 catch (Exception ex)
                 {
                     // log it:
                     Debug.WriteLine(ex.ToString());
-                    transaction.Rollback();
                     throw;
                 }
             }
@@ -113,7 +118,12 @@ namespace InventoryDatabaseLayer
 
         public void UpsertGenres(List<Genre> genres)
         {
-            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions
+                {
+                    IsolationLevel = IsolationLevel.ReadCommitted,
+                }))
             {
                 try
                 {
@@ -125,12 +135,12 @@ namespace InventoryDatabaseLayer
                             throw new Exception($"ERROR saving the genre {genre.Name}");
                         }
                     }
+                    scope.Complete();
                 }
                 catch (Exception ex)
                 {
                     // lot it:
                     Debug.WriteLine(ex.ToString());
-                    transaction.Rollback();
                     throw;
                 }
             }

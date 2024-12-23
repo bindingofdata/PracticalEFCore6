@@ -16,6 +16,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace InventoryDatabaseLayer
 {
@@ -43,7 +44,12 @@ namespace InventoryDatabaseLayer
 
         public void DeletePlayers(List<int> playerIds)
         {
-            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions
+                {
+                    IsolationLevel = IsolationLevel.ReadCommitted,
+                }))
             {
                 try
                 {
@@ -51,13 +57,12 @@ namespace InventoryDatabaseLayer
                     {
                         DeletePlayer(playerId);
                     }
-                    transaction.Commit();
+                    scope.Complete();
                 }
                 catch (Exception ex)
                 {
                     // log it:
                     Debug.WriteLine(ex.ToString());
-                    transaction.Rollback();
                     throw;
                 }
             }
@@ -120,7 +125,12 @@ namespace InventoryDatabaseLayer
 
         public void UpsertPlayers(List<Player> players)
         {
-            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions
+                {
+                    IsolationLevel = IsolationLevel.ReadCommitted,
+                }))
             {
                 try
                 {
@@ -132,13 +142,12 @@ namespace InventoryDatabaseLayer
                             throw new Exception($"ERROR saving the player {player.Name}");
                         }
                     }
-                    transaction.Commit();
+                    scope.Complete();
                 }
                 catch (Exception ex)
                 {
                     // log it:
                     Debug.WriteLine(ex.ToString());
-                    transaction.Rollback();
                     throw;
                 }
             }

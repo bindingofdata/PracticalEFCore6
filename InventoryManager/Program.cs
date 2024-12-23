@@ -289,7 +289,7 @@ namespace InventoryManager
         {
             List<Player> players = new List<Player>();
             List<Player> newPlayers = new List<Player>();
-            Console.WriteLine("Add a player?");
+            Console.WriteLine("Add a player? y/n");
             bool createAnother = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
             while (createAnother)
             {
@@ -317,7 +317,7 @@ namespace InventoryManager
                 }
                 players.Add(newPlayer);
 
-                Console.WriteLine("Would you like to add another player?");
+                Console.WriteLine("Would you like to add another player? y/n");
                 createAnother = Console.ReadLine().StartsWith("y", StringComparison.OrdinalIgnoreCase);
 
                 if (!createAnother && batchCreate)
@@ -345,6 +345,8 @@ namespace InventoryManager
             {
                 Console.WriteLine($"ID: {item.Id} | {item.Name}");
             }
+            Console.WriteLine("Press any key to continue...");
+            _ = Console.ReadKey();
             return inventory.ToList();
         }
 

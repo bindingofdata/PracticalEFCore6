@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 using System.Net.NetworkInformation;
+using InventoryModels.Dtos;
+using Shouldly;
 
 namespace InventoryManagerUnitTests
 {
@@ -87,9 +89,19 @@ namespace InventoryManagerUnitTests
         [TestMethod]
         public void TestGetItems()
         {
-            var result = _itemsService.GetItems();
-            Assert.IsNotNull(result);
-            Assert.IsTrue(result.Count > 0);
+            List<ItemDto> result = _itemsService.GetItems();
+            result.ShouldNotBeNull();
+            result.Count.ShouldBe(3);
+            List<Item> expected = GetItemsTestData();
+
+            result[0].Name.ShouldBe(expected[0].Name);
+            result[0].Description.ShouldBe(expected[0].Description);
+
+            result[1].Name.ShouldBe(expected[1].Name);
+            result[1].Description.ShouldBe(expected[1].Description);
+
+            result[2].Name.ShouldBe(expected[2].Name);
+            result[2].Description.ShouldBe(expected[2].Description);
         }
     }
 }

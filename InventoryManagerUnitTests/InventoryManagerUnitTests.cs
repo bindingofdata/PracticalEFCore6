@@ -24,6 +24,15 @@ namespace InventoryManagerUnitTests
         private static IServiceProvider _serviceProvider;
         public TestContext TestContext { get; set; }
 
+        #region Constants
+        private const string TITLE_NEWHOPE = "Star Wars IV: A New Hope";
+        private const string TITLE_EMPIRE = "Star Wars V: The Empire Strikes Back";
+        private const string TITLE_JEDI = "Star Wars VI: Return of the Jedi";
+        private const string DESC_NEWHOPE = "Luke's Friends";
+        private const string DESC_EMPIRE = "Luke's Dad";
+        private const string DESC_JEDI = "Luke's Sister";
+        #endregion
+
         [ClassInitialize]
         public static void InitializeTestEnvironment(TestContext testContext)
         {
@@ -42,27 +51,37 @@ namespace InventoryManagerUnitTests
         [TestInitialize]
         public void InitializeTests()
         {
+            InstantiateItemsRepoMock();
+            _itemsService = new ItemsService(_itemsRepo.Object, _mapper);
+        }
+
+        private void InstantiateItemsRepoMock()
+        {
             _itemsRepo = new Mock<IItemsRepo>();
-            List<Item> items = new List<Item>()
+            List<Item> items = GetItemsTestData();
+            _itemsRepo.Setup(mock => mock.GetItems()).Returns(items);
+        }
+
+        private static List<Item> GetItemsTestData()
+        {
+            return new List<Item>()
             {
                 new Item()
                 {
-                    Id = 1, Name = "Star Wars IV: A New Hope",
-                    Description = "Luke's Friends", CategoryId = 2,
+                    Id = 1, Name = TITLE_NEWHOPE,
+                    Description = DESC_NEWHOPE, CategoryId = 2,
                 },
                 new Item()
                 {
-                    Id = 2, Name = "Star Wars V: The Empire Strikes Back",
-                    Description = "Luke's Dad", CategoryId = 2,
+                    Id = 2, Name = TITLE_EMPIRE,
+                    Description = DESC_EMPIRE, CategoryId = 2,
                 },
                 new Item()
                 {
-                    Id = 3, Name = "Star Wars VI: Return of the Jedi",
-                    Description = "Luke's Sister", CategoryId = 2,
+                    Id = 3, Name = TITLE_JEDI,
+                    Description = DESC_JEDI, CategoryId = 2,
                 },
             };
-            _itemsRepo.Setup(mock => mock.GetItems()).Returns(items);
-            _itemsService = new ItemsService(_itemsRepo.Object, _mapper);
         }
 
         [TestMethod]

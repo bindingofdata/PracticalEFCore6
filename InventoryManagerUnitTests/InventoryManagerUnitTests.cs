@@ -1,10 +1,16 @@
-﻿using InventoryBusinessLayer;
+﻿using AutoMapper;
+
+using InventoryBusinessLayer;
 
 using InventoryDatabaseLayer;
 
 using InventoryModels;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Moq;
+
+using System.Net.NetworkInformation;
 
 namespace InventoryManagerUnitTests
 {
@@ -13,6 +19,25 @@ namespace InventoryManagerUnitTests
     {
         private IItemsService _itemsService;
         private Mock<IItemsRepo> _itemsRepo;
+        private static MapperConfiguration _mapperConfig;
+        private static IMapper _mapper;
+        private static IServiceProvider _serviceProvider;
+        public TestContext TestContext { get; set; }
+
+        [ClassInitialize]
+        public static void InitializeTestEnvironment(TestContext testContext)
+        {
+            ServiceCollection services = new ServiceCollection();
+            services.AddAutoMapper(typeof(InventoryMapper));
+            _serviceProvider = services.BuildServiceProvider();
+
+            _mapperConfig = new MapperConfiguration(config =>
+            {
+                config.AddProfile<InventoryMapper>();
+            });
+            _mapperConfig.AssertConfigurationIsValid();
+            _mapper = _mapperConfig.CreateMapper();
+        }
 
         [TestInitialize]
         public void InitializeTests()

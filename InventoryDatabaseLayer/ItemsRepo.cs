@@ -73,6 +73,8 @@ namespace InventoryDatabaseLayer
         {
             return _context.Items
                 .Include(item => item.Category)
+                .Include(item => item.Category.CategoryDetail)
+                .Include(item => item.Players)
                 .AsEnumerable()
                 .Where(item => !item.IsDeleted)
                 .OrderBy(item => item.Name)

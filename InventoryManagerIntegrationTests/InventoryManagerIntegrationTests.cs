@@ -13,6 +13,7 @@ using System;
 using System.Linq;
 using Xunit;
 using InventoryModels;
+using InventoryModels.Dtos;
 
 namespace InventoryManagerIntegrationTests
 {
@@ -68,6 +69,7 @@ namespace InventoryManagerIntegrationTests
         [Fact]
         public void TestGetItems()
         {
+            // arrange
             using (InventoryDbContext context = new InventoryDbContext(_options))
             {
                 // act
@@ -82,10 +84,10 @@ namespace InventoryManagerIntegrationTests
                 firstItem.Name.ShouldBe("Airplane!");
                 firstItem.CurrentOrFinalPrice.ShouldBe(9.99m);
                 firstItem.Category.ShouldNotBeNull();
-                firstItem.Category.Name.ShouldBe(MovieCategoryNameString);
+                firstItem.Category.Name.ShouldBe(MOVIE_CATEGORY_NAME_STRING);
                 firstItem.Category.CategoryDetail.ShouldNotBeNull();
-                firstItem.Category.CategoryDetail.ColorName.ShouldBe("Red");
-                firstItem.Category.CategoryDetail.ColorValue.ShouldBe("#FF0000");
+                firstItem.Category.CategoryDetail.ColorName.ShouldBe(MOVIE_CATEGORY_COLOR_NAME);
+                firstItem.Category.CategoryDetail.ColorValue.ShouldBe(MOVIE_CATEGORY_COLOR_VALUE);
                 firstItem.Description.ShouldBe("Don't call me Shirley.");
                 firstItem.IsOnSale.ShouldBeFalse();
                 firstItem.Notes.ShouldBe("https://www.imdb.com/title/tt0080339/");
@@ -107,9 +109,38 @@ namespace InventoryManagerIntegrationTests
             }
         }
 
+        [Theory]
+        [InlineData(MOVIE_CATEGORY_NAME_STRING, MOVIE_CATEGORY_COLOR_NAME, MOVIE_CATEGORY_COLOR_VALUE)]
+        [InlineData(GAME_CATEGORY_NAME_STRING, GAME_CATEGORY_COLOR_NAME, GAME_CATEGORY_COLOR_VALUE)]
+        [InlineData(BOOK_CATEGORY_NAME_STRING, BOOK_CATEGORY_COLOR_NAME, BOOK_CATEGORY_COLOR_VALUE)]
+        public void TestCategoryColors(string name, string color, string colorValue)
+        {
+            // arrange
+            using (InventoryDbContext context = new InventoryDbContext(_options))
+            {
+                // act
+                ICategoriesRepo categoriesRepo = new CategoriesRepo(context, _mapper);
+                List<CategoryDto> categories = categoriesRepo.ListCategoriesAndDetails();
+
+                categories.ShouldNotBeNull();
+                categories.Count.ShouldBe(3);
+
+                CategoryDto? category = categories.FirstOrDefault(cat => cat.Category.Equals(name));
+                category.ShouldNotBeNull();
+                category.CategoryDetail.Color.ShouldBe(color);
+                category.CategoryDetail.Value.ShouldBe(colorValue);
+            }
+        }
+
         private const string SEED_USER_ID = "873fb5cd-ad6b-458d-ab59-3c5eca45a368";
-        private const string MovieCategoryNameString = "Movies";
-        private const string BookCategoryNameString = "Books";
-        private const string GameCategoryNameString = "Games";
+        private const string MOVIE_CATEGORY_NAME_STRING = "Movies";
+        private const string MOVIE_CATEGORY_COLOR_NAME = "Red";
+        private const string MOVIE_CATEGORY_COLOR_VALUE = "#FF0000";
+        private const string GAME_CATEGORY_NAME_STRING = "Games";
+        private const string GAME_CATEGORY_COLOR_NAME = "Green";
+        private const string GAME_CATEGORY_COLOR_VALUE = "#00FF00";
+        private const string BOOK_CATEGORY_NAME_STRING = "Books";
+        private const string BOOK_CATEGORY_COLOR_NAME = "Blue";
+        private const string BOOK_CATEGORY_COLOR_VALUE = "#0000FF";
     }
 }

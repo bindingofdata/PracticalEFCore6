@@ -67,14 +67,14 @@ namespace InventoryManagerIntegrationTests
         }
 
         [Fact]
-        public void TestGetItems()
+        public async Task TestGetItems()
         {
             // arrange
             using (InventoryDbContext context = new InventoryDbContext(_options))
             {
                 // act
                 _dbRepo = new ItemsRepo(context, _mapper);
-                List<Item> items = _dbRepo.GetItems();
+                List<Item> items = await _dbRepo.GetItems();
 
                 // assert
                 items.ShouldNotBeNull();
@@ -113,14 +113,14 @@ namespace InventoryManagerIntegrationTests
         [InlineData(MOVIE_CATEGORY_NAME_STRING, MOVIE_CATEGORY_COLOR_NAME, MOVIE_CATEGORY_COLOR_VALUE)]
         [InlineData(GAME_CATEGORY_NAME_STRING, GAME_CATEGORY_COLOR_NAME, GAME_CATEGORY_COLOR_VALUE)]
         [InlineData(BOOK_CATEGORY_NAME_STRING, BOOK_CATEGORY_COLOR_NAME, BOOK_CATEGORY_COLOR_VALUE)]
-        public void TestCategoryColors(string name, string color, string colorValue)
+        public async Task TestCategoryColors(string name, string color, string colorValue)
         {
             // arrange
             using (InventoryDbContext context = new InventoryDbContext(_options))
             {
                 // act
                 ICategoriesRepo categoriesRepo = new CategoriesRepo(context, _mapper);
-                List<CategoryDto> categories = categoriesRepo.ListCategoriesAndDetails();
+                List<CategoryDto> categories = await categoriesRepo.ListCategoriesAndDetails();
 
                 categories.ShouldNotBeNull();
                 categories.Count.ShouldBe(3);

@@ -27,11 +27,11 @@ namespace InventoryBusinessLayer
             _mapper = mapper;
         }
 
-        public void DeleteCategories(List<int> categoryIds)
+        public async Task DeleteCategories(List<int> categoryIds)
         {
             try
             {
-                _dbRepo.DeleteCategories(categoryIds);
+                await _dbRepo.DeleteCategories(categoryIds);
             }
             catch (Exception ex)
             {
@@ -41,26 +41,26 @@ namespace InventoryBusinessLayer
             }
         }
 
-        public void DeleteCategory(int id)
+        public async Task DeleteCategory(int id)
         {
             if (id <= 0)
             {
                 throw new ArgumentException("Please set a valid ID");
             }
 
-            _dbRepo.DeleteCategory(id);
+            await _dbRepo.DeleteCategory(id);
         }
 
-        public List<CategoryDto> ListCategoriesAndDetails()
+        public async Task<List<CategoryDto>> ListCategoriesAndDetails()
         {
-            return _dbRepo.ListCategoriesAndDetails();
+            return await _dbRepo.ListCategoriesAndDetails();
         }
 
-        public void UpsertCategories(List<Category> categories)
+        public async Task UpsertCategories(List<Category> categories)
         {
             try
             {
-                _dbRepo.UpsertCategories(categories);
+                await _dbRepo.UpsertCategories(categories);
             }
             catch (Exception ex)
             {
@@ -70,9 +70,9 @@ namespace InventoryBusinessLayer
             }
         }
 
-        public int UpsertCategory(Category category)
+        public async Task<int> UpsertCategory(Category category)
         {
-            return _dbRepo.UpsertCategory(category);
+            return await _dbRepo.UpsertCategory(category);
         }
     }
 }

@@ -25,21 +25,21 @@ namespace InventoryDatabaseLayer
             _mapper = mapper;
         }
 
-        public void DeleteGenre(int id)
+        public async Task DeleteGenre(int id)
         {
             if (id <= 0)
             {
                 throw new ArgumentException("Please set a valid ID");
             }
 
-            _dbRepo.DeleteGenre(id);
+            await _dbRepo.DeleteGenre(id);
         }
 
-        public void DeleteGenres(List<int> genreIds)
+        public async Task DeleteGenres(List<int> genreIds)
         {
             try
             {
-                _dbRepo.DeleteGenres(genreIds);
+                await _dbRepo.DeleteGenres(genreIds);
             }
             catch (Exception ex)
             {
@@ -49,21 +49,21 @@ namespace InventoryDatabaseLayer
             }
         }
 
-        public List<GenreDto> GetGenres()
+        public async Task<List<GenreDto>> GetGenres()
         {
-            return _dbRepo.GetGenres();
+            return await _dbRepo.GetGenres();
         }
 
-        public int UpsertGenre(Genre genre)
+        public async Task<int> UpsertGenre(Genre genre)
         {
-            return _dbRepo.UpsertGenre(genre);
+            return await _dbRepo.UpsertGenre(genre);
         }
 
-        public void UpsertGenres(List<Genre> genres)
+        public async Task UpsertGenres(List<Genre> genres)
         {
             try
             {
-                _dbRepo.UpsertGenres(genres);
+                await _dbRepo.UpsertGenres(genres);
             }
             catch (Exception ex)
             {

@@ -3,7 +3,6 @@ using InventoryDatabaseLayer;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using libDB;
 using AutoMapper;
-using InventoryModels.Dtos;
 using InventoryModels;
 using System.Diagnostics;
 
@@ -20,20 +19,20 @@ namespace InventoryBusinessLayer
             _mapper = mapper;
         }
 
-        public void DeleteItem(int id)
+        public async Task DeleteItem(int id)
         {
             if (id <= 0)
             {
                 throw new ArgumentException("Please set a valid id before deleting");
             }
-            _dbRepo.DeleteItem(id);
+            await _dbRepo.DeleteItem(id);
         }
 
-        public void DeleteItems(List<int> ItemIds)
+        public async Task DeleteItems(List<int> ItemIds)
         {
             try
             {
-                _dbRepo.DeleteItems(ItemIds);
+                await _dbRepo.DeleteItems(ItemIds);
             }
             catch (Exception ex)
             {
@@ -43,50 +42,51 @@ namespace InventoryBusinessLayer
             }
         }
 
-        public string GetAllItemsPipeDelimitedString()
+        public async Task<string> GetAllItemsPipeDelimitedString()
         {
-            return string.Join('|', GetItems());
+            List<ItemDto> items = await GetItems();
+            return string.Join('|', items);
         }
 
-        public List<ItemDto> GetItems()
+        public async Task<List<ItemDto>> GetItems()
         {
-            return _mapper.Map<List<ItemDto>>(_dbRepo.GetItems());
+            return _mapper.Map<List<ItemDto>>(await _dbRepo.GetItems());
         }
 
-        public List<ItemDto> GetItemsByDateRange(DateTime startDate, DateTime endDate)
+        public async Task<List<ItemDto>> GetItemsByDateRange(DateTime startDate, DateTime endDate)
         {
-            return _dbRepo.GetItemsByDateRange(startDate, endDate);
+            return await _dbRepo.GetItemsByDateRange(startDate, endDate);
         }
 
-        public List<GetItemsForListingDto> GetItemsForListingFromProcedure()
+        public async Task<List<GetItemsForListingDto>> GetItemsForListingFromProcedure()
         {
-            return _dbRepo.GetItemListingFromProcedure();
+            return await _dbRepo.GetItemListingFromProcedure();
         }
 
-        public List<GetItemsTotalValueDto> GetItemsTotalValue(bool isActive)
+        public async Task<List<GetItemsTotalValueDto>> GetItemsTotalValue(bool isActive)
         {
-            return _dbRepo.GetItemsTotalValues(isActive);
+            return await _dbRepo.GetItemsTotalValues(isActive);
         }
 
-        public List<FullItemDetailsDto> GetItemsWithGenresAndCategories()
+        public async Task<List<FullItemDetailsDto>> GetItemsWithGenresAndCategories()
         {
-            return _dbRepo.GetItemsWithGenresAndCategories();
+            return await _dbRepo.GetItemsWithGenresAndCategories();
         }
 
-        public int UpsertItem(CreateOrUpdateItemDto item)
+        public async Task<int> UpsertItem(CreateOrUpdateItemDto item)
         {
             if (item.CategoryId <= 0)
             {
                 throw new ArgumentException("Please set the category ID before insert or update");
             }
-            return _dbRepo.UpsertItem(_mapper.Map<Item>(item));
+            return await _dbRepo.UpsertItem(_mapper.Map<Item>(item));
         }
 
-        public void UpsertItems(List<CreateOrUpdateItemDto> items)
+        public async Task UpsertItems(List<CreateOrUpdateItemDto> items)
         {
             try
             {
-                _dbRepo.UpsertItems(_mapper.Map<List<Item>>(items));
+                await _dbRepo.UpsertItems(_mapper.Map<List<Item>>(items));
             }
             catch (Exception ex)
             {

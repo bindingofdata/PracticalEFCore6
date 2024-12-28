@@ -27,21 +27,21 @@ namespace InventoryBusinessLayer
             _mapper = mapper;
         }
 
-        public void DeletePlayer(int id)
+        public async Task DeletePlayer(int id)
         {
             if (id <= 0)
             {
                 throw new ArgumentException("Please set a valid ID");
             }
 
-            _dbRepo.DeletePlayer(id);
+            await _dbRepo.DeletePlayer(id);
         }
 
-        public void DeletePlayers(List<int> playerIds)
+        public async Task DeletePlayers(List<int> playerIds)
         {
             try
             {
-                _dbRepo.DeletePlayers(playerIds);
+                await _dbRepo.DeletePlayers(playerIds);
             }
             catch (Exception ex)
             {
@@ -51,21 +51,21 @@ namespace InventoryBusinessLayer
             }
         }
 
-        public List<PlayerDto> GetPlayers()
+        public async Task<List<PlayerDto>> GetPlayers()
         {
-            return _dbRepo.GetPlayers();
+            return await _dbRepo.GetPlayers();
         }
 
-        public int UpsertPlayer(Player player)
+        public async Task<int> UpsertPlayer(Player player)
         {
-            return _dbRepo.UpsertPlayer(player);
+            return await _dbRepo.UpsertPlayer(player);
         }
 
-        public void UpsertPlayers(List<Player> players)
+        public async Task UpsertPlayers(List<Player> players)
         {
             try
             {
-                _dbRepo.UpsertPlayers(players);
+                await _dbRepo.UpsertPlayers(players);
             }
             catch (Exception ex)
             {

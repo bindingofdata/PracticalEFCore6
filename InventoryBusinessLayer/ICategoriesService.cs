@@ -11,10 +11,10 @@ namespace InventoryBusinessLayer
 {
     public interface ICategoriesService
     {
-        List<CategoryDto> ListCategoriesAndDetails();
-        int UpsertCategory(Category category);
-        void UpsertCategories(List<Category> categories);
-        void DeleteCategory(int id);
-        void DeleteCategories(List<int> categoryIds);
+        Task<List<CategoryDto>> ListCategoriesAndDetails();
+        Task<int> UpsertCategory(Category category);
+        Task UpsertCategories(List<Category> categories);
+        Task DeleteCategory(int id);
+        Task DeleteCategories(List<int> categoryIds);
     }
 }

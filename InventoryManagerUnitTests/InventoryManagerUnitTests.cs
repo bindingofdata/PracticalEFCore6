@@ -84,10 +84,10 @@ namespace InventoryManagerUnitTests
         {
             _itemsRepo = new Mock<IItemsRepo>();
             List<Item> items = GetItemsTestData();
-            _itemsRepo.Setup(mock => mock.GetItems()).Returns(items);
+            _itemsRepo.Setup(mock => mock.GetItems()).Returns(Task.FromResult(items));
             _itemsRepo.Setup(mock => mock.GetItemsByDateRange(
                 START_DATE, END_DATE))
-                .Returns(_mapper.Map<List<ItemDto>>(items.Where(item => item.Name.Equals(TITLE_EMPIRE))));
+                .Returns(Task.FromResult(_mapper.Map<List<ItemDto>>(items.Where(item => item.Name.Equals(TITLE_EMPIRE)))));
         }
 
         private static List<Item> GetItemsTestData()
@@ -153,9 +153,9 @@ namespace InventoryManagerUnitTests
         }
 
         [TestMethod]
-        public void TestGetItems()
+        public async Task TestGetItems()
         {
-            List<ItemDto> result = _itemsService.GetItems();
+            List<ItemDto> result = await _itemsService.GetItems();
             result.ShouldNotBeNull();
             result.Count.ShouldBe(3);
             List<Item> expected = GetItemsTestData();
@@ -174,9 +174,9 @@ namespace InventoryManagerUnitTests
         }
 
         [TestMethod]
-        public void TestGetItemsByDateRange()
+        public async Task TestGetItemsByDateRange()
         {
-            List<ItemDto> result = _itemsService.GetItemsByDateRange(START_DATE, END_DATE);
+            List<ItemDto> result = await _itemsService.GetItemsByDateRange(START_DATE, END_DATE);
             result.ShouldNotBeNull();
             result.Count.ShouldBe(1);
             ItemDto expected = _mapper.Map<ItemDto>(GetItemsTestData().FirstOrDefault(item => item.Name.Equals(TITLE_EMPIRE)));

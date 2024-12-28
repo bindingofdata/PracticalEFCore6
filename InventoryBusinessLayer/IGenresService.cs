@@ -11,10 +11,10 @@ namespace InventoryDatabaseLayer
 {
     public interface IGenresService
     {
-        List<GenreDto> GetGenres();
-        int UpsertGenre(Genre genre);
-        void UpsertGenres(List<Genre> genres);
-        void DeleteGenre(int id);
-        void DeleteGenres(List<int> genreIds);
+        Task<List<GenreDto>> GetGenres();
+        Task<int> UpsertGenre(Genre genre);
+        Task UpsertGenres(List<Genre> genres);
+        Task DeleteGenre(int id);
+        Task DeleteGenres(List<int> genreIds);
     }
 }

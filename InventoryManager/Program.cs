@@ -37,7 +37,7 @@ namespace InventoryManager
         private static List<CategoryDto> _categories;
         private static List<PlayerDto> _players;
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             BuildOptions();
             BuildMapper();
@@ -46,8 +46,8 @@ namespace InventoryManager
                 _itemsService = new ItemsService(new ItemsRepo(db, _mapper), _mapper);
                 _categoriesService = new CategoriesService(new CategoriesRepo(db, _mapper), _mapper);
                 _playersService = new PlayersService(new PlayersRepo(db, _mapper), _mapper);
-                _categories = GetCategories();
-                _players = GetPlayers();
+                _categories = await GetCategories();
+                _players = await GetPlayers();
                 //PrintSectionHeader(nameof(ListInventory));
                 //ListInventory();
 
@@ -111,7 +111,7 @@ namespace InventoryManager
             }
         }
 
-        private static void CreateMultipleItems()
+        private static async Task CreateMultipleItems()
         {
             Console.WriteLine("Would you like to create items as a batch? y/n");
             bool batchCreate = GetBoolFromUser();
@@ -135,7 +135,7 @@ namespace InventoryManager
                 newItem.Quantity = GetIntFromUser();
                 Console.WriteLine("Enter any notes.");
                 newItem.Notes = Console.ReadLine();
-                newItem.Players = AddPlayers(batchCreate);
+                newItem.Players = await AddPlayers(batchCreate);
 
                 newItem.IsActive = true;
                 newItem.IsDeleted = false;
@@ -143,7 +143,7 @@ namespace InventoryManager
 
                 if (!batchCreate)
                 {
-                    _itemsService.UpsertItem(newItem);
+                    await _itemsService.UpsertItem(newItem);
                 }
                 else
                 {
@@ -155,12 +155,12 @@ namespace InventoryManager
 
                 if (!createAnother && batchCreate)
                 {
-                    _itemsService.UpsertItems(allItems);
+                    await _itemsService.UpsertItems(allItems);
                 }
             }
         }
 
-        private static void UpdateMultipleItems()
+        private static async Task UpdateMultipleItems()
         {
             Console.WriteLine("Would you like to update items as a batch? y/n");
             bool batchUpdate = GetBoolFromUser();
@@ -171,7 +171,7 @@ namespace InventoryManager
             {
                 Console.WriteLine("Enter the ID number to update.");
                 Console.WriteLine(_sectionSeparator);
-                List<ItemDto> items = PrintAllItems(true, true);
+                List<ItemDto> items = await PrintAllItems(true, true);
                 Console.WriteLine(_sectionSeparator);
 
                 Console.Write("ID to update: ");
@@ -215,7 +215,7 @@ namespace InventoryManager
 
                     if (!batchUpdate)
                     {
-                        _itemsService.UpsertItem(updateItem);
+                        await _itemsService.UpsertItem(updateItem);
                     }
                     else
                     {
@@ -228,12 +228,12 @@ namespace InventoryManager
 
                 if (!updateAnother && batchUpdate)
                 {
-                    _itemsService.UpsertItems(allItems);
+                    await _itemsService.UpsertItems(allItems);
                 }
             }
         }
 
-        private static void DeleteMultipleItems()
+        private static async Task DeleteMultipleItems()
         {
             Console.WriteLine("Would you like to delete items as a batch? y/n");
             bool batchDelete = GetBoolFromUser();
@@ -244,7 +244,7 @@ namespace InventoryManager
             {
                 Console.WriteLine("Enter the ID number to delete.");
                 Console.WriteLine(_sectionSeparator);
-                List<ItemDto> items = PrintAllItems(true, true);
+                List<ItemDto> items = await PrintAllItems(true, true);
                 Console.WriteLine(_sectionSeparator);
 
                 Console.Write("ID to delete: ");
@@ -265,7 +265,7 @@ namespace InventoryManager
                         Console.WriteLine($"Are you sure you want to delete the item {itemMatch.Name} [{itemMatch.Id}]? y/n");
                         if (GetBoolFromUser())
                         {
-                            _itemsService.DeleteItem(id);
+                            await _itemsService.DeleteItem(id);
                             Console.WriteLine("Item deleted");
                         }
                     }
@@ -280,14 +280,14 @@ namespace InventoryManager
                     allItems.ForEach(item => Console.WriteLine($"Item: {itemMatch.Name} [{itemMatch.Id}]"));
                     if (GetBoolFromUser())
                     {
-                        _itemsService.DeleteItems(allItems.Select(item => item.Id).ToList());
+                        await _itemsService.DeleteItems(allItems.Select(item => item.Id).ToList());
                         Console.WriteLine("Items deleted.");
                     }
                 }
             }
         }
 
-        private static List<Player> AddPlayers(bool batchCreate)
+        private static async Task<List<Player>> AddPlayers(bool batchCreate)
         {
             List<Player> players = new List<Player>();
             List<Player> newPlayers = new List<Player>();
@@ -310,7 +310,7 @@ namespace InventoryManager
 
                     if (!batchCreate)
                     {
-                        _playersService.UpsertPlayer(newPlayer);
+                        await _playersService.UpsertPlayer(newPlayer);
                     }
                     else
                     {
@@ -324,16 +324,16 @@ namespace InventoryManager
 
                 if (!createAnother && batchCreate)
                 {
-                    _playersService.UpsertPlayers(newPlayers);
+                    await _playersService.UpsertPlayers(newPlayers);
                 }
             }
 
             return players;
         }
 
-        private static List<ItemDto> PrintAllItems(bool activeOnly, bool sortByName)
+        private static async Task<List<ItemDto>> PrintAllItems(bool activeOnly, bool sortByName)
         {
-            IEnumerable<ItemDto> inventory = _itemsService.GetItems();
+            IEnumerable<ItemDto> inventory = await _itemsService.GetItems();
             if (activeOnly)
             {
                 inventory = inventory.Where(item => !item.IsDeleted);
@@ -456,14 +456,14 @@ namespace InventoryManager
             _mapper = _mapperConfiguration.CreateMapper();
         }
 
-        private static List<CategoryDto> GetCategories()
+        private static async Task<List<CategoryDto>> GetCategories()
         {
-            return _categoriesService.ListCategoriesAndDetails();
+            return await _categoriesService.ListCategoriesAndDetails();
         }
 
-        private static List<PlayerDto> GetPlayers()
+        private static async Task<List<PlayerDto>> GetPlayers()
         {
-            return _playersService.GetPlayers();
+            return await _playersService.GetPlayers();
         }
 
         #region Tutorial Methods
@@ -474,18 +474,18 @@ namespace InventoryManager
             Console.WriteLine(_sectionSeparator);
         }
 
-        private static void ListInventory()
+        private static async Task ListInventory()
         {
-            List<ItemDto> results = _itemsService.GetItems();
+            List<ItemDto> results = await _itemsService.GetItems();
 
             results.OrderBy(x => x.Name)
                 .ToList()
                 .ForEach(item => Console.WriteLine($"Item: {item.Name}"));
         }
 
-        private static void GetItemsForListing()
+        private static async Task GetItemsForListing()
         {
-            List<GetItemsForListingDto> results = _itemsService.GetItemsForListingFromProcedure();
+            List<GetItemsForListingDto> results = await _itemsService.GetItemsForListingFromProcedure();
             StringBuilder output = new StringBuilder();
             foreach (GetItemsForListingDto item in results)
             {
@@ -500,24 +500,24 @@ namespace InventoryManager
             }
         }
 
-        private static void GetAllItemsAsPipeDelimitedString()
+        private static async Task GetAllItemsAsPipeDelimitedString()
         {
-            Console.WriteLine($"All items: {_itemsService.GetAllItemsPipeDelimitedString()}");
+            Console.WriteLine($"All items: {await _itemsService.GetAllItemsPipeDelimitedString()}");
         }
 
-        private static void GetItemsTotalValues()
+        private static async Task GetItemsTotalValues()
         {
-            foreach (GetItemsTotalValueDto item in _itemsService.GetItemsTotalValue(true))
+            foreach (GetItemsTotalValueDto item in await _itemsService.GetItemsTotalValue(true))
             {
                 Console.WriteLine($"Item -{item.Id,-10}|{item.Name,-50}|{item.Quantity,-4}|{item.TotalValue,-5}");
             }
         }
 
-        private static void GetFullitemDetails()
+        private static async Task GetFullitemDetails()
         {
             using (InventoryDbContext db = new InventoryDbContext(_optionsBuilder.Options))
             {
-                List<FullItemDetailsDto> result = _itemsService.GetItemsWithGenresAndCategories();
+                List<FullItemDetailsDto> result = await _itemsService.GetItemsWithGenresAndCategories();
 
                 StringBuilder resultView = new StringBuilder();
                 foreach (FullItemDetailsDto item in result)
@@ -534,17 +534,16 @@ namespace InventoryManager
             }
         }
 
-        private static void ListInventoryLinq()
+        private static async Task ListInventoryLinq()
         {
             DateTime minDate = new DateTime(2021, 1, 1);
             DateTime maxDate = new DateTime(2025, 1, 1);
 
-            List<ItemDto> results = _itemsService.GetItemsByDateRange(minDate,maxDate)
-                .OrderBy(item => item.CategoryName)
-                .ThenBy(item => item.Name)
-                .ToList();
+            List<ItemDto> results = await _itemsService.GetItemsByDateRange(minDate, maxDate);
 
-            foreach (ItemDto item in results)
+            foreach (ItemDto item in results
+                .OrderBy(item => item.CategoryName)
+                .ThenBy(item => item.Name))
             {
                 Console.WriteLine($"ITEM: {item.CategoryName} | {item.Name} - {item.Description}");
             }

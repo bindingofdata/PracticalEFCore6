@@ -6,6 +6,7 @@ using InventoryModels.Dtos;
 
 using libDB;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 using System;
@@ -29,18 +30,18 @@ namespace InventoryDatabaseLayer
             _mapper = mapper;
         }
 
-        public void DeleteGenre(int id)
+        public async Task DeleteGenre(int id)
         {
-            Genre? genre = _context.Genres.FirstOrDefault(genre => genre.Id == id);
+            Genre? genre = await _context.Genres.FirstOrDefaultAsync(genre => genre.Id == id);
             if (genre == null)
             {
                 return;
             }
             genre.IsDeleted = true;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteGenres(List<int> genreIds)
+        public async Task DeleteGenres(List<int> genreIds)
         {
             using (TransactionScope scope = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -53,7 +54,7 @@ namespace InventoryDatabaseLayer
                 {
                     foreach (int genreId in genreIds)
                     {
-                        DeleteGenre(genreId);
+                        await DeleteGenre(genreId);
                     }
                     scope.Complete();
                 }
@@ -66,29 +67,29 @@ namespace InventoryDatabaseLayer
             }
         }
 
-        public List<GenreDto> GetGenres()
+        public async Task<List<GenreDto>> GetGenres()
         {
-            return _context.Genres
+            return await _context.Genres
                 .ProjectTo<GenreDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
         }
 
-        public int UpsertGenre(Genre genre)
+        public async Task<int> UpsertGenre(Genre genre)
         {
             if (genre.Id > 0)
             {
-                return UpdateGenre(genre);
+                return await UpdateGenre(genre);
             }
 
-            return CreateGenre(genre);
+            return await CreateGenre(genre);
         }
 
-        private int CreateGenre(Genre genre)
+        private async Task<int> CreateGenre(Genre genre)
         {
-            _context.Genres.Add(genre);
-            _context.SaveChanges();
-            Genre? newGenre = _context.Genres.ToList()
-                .FirstOrDefault(currentGenre => currentGenre.Name.ToLower().Equals(genre.Name.ToLower()));
+            await _context.Genres.AddAsync(genre);
+            await _context.SaveChangesAsync();
+            Genre? newGenre = await _context.Genres
+                .FirstOrDefaultAsync(currentGenre => currentGenre.Name.ToLower().Equals(genre.Name.ToLower()));
 
             if (newGenre == null)
             {
@@ -98,10 +99,10 @@ namespace InventoryDatabaseLayer
             return newGenre.Id;
         }
 
-        private int UpdateGenre(Genre genre)
+        private async Task<int> UpdateGenre(Genre genre)
         {
-            Genre? dbGenre = _context.Genres
-                .FirstOrDefault(currentGenre => currentGenre.Id == genre.Id);
+            Genre? dbGenre = await _context.Genres
+                .FirstOrDefaultAsync(currentGenre => currentGenre.Id == genre.Id);
 
             if (dbGenre == null)
             {
@@ -112,11 +113,11 @@ namespace InventoryDatabaseLayer
             dbGenre.IsActive = genre.IsActive;
             dbGenre.IsDeleted = genre.IsDeleted;
             dbGenre.LastModifiedDate = DateTime.UtcNow;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return dbGenre.Id;
         }
 
-        public void UpsertGenres(List<Genre> genres)
+        public async Task UpsertGenres(List<Genre> genres)
         {
             using (TransactionScope scope = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -129,7 +130,7 @@ namespace InventoryDatabaseLayer
                 {
                     foreach (Genre genre in genres)
                     {
-                        bool success = UpsertGenre(genre) > 0;
+                        bool success = await UpsertGenre(genre) > 0;
                         if (!success)
                         {
                             throw new Exception($"ERROR saving the genre {genre.Name}");

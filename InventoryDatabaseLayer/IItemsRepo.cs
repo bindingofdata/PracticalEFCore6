@@ -11,14 +11,14 @@ namespace InventoryDatabaseLayer
 {
     public interface IItemsRepo
     {
-        List<Item> GetItems();
-        List<ItemDto> GetItemsByDateRange(DateTime startDate, DateTime endDate);
-        List<GetItemsForListingDto> GetItemListingFromProcedure();
-        List<GetItemsTotalValueDto> GetItemsTotalValues(bool isActive);
-        List<FullItemDetailsDto> GetItemsWithGenresAndCategories();
-        int UpsertItem(Item item);
-        void UpsertItems(List<Item> items);
-        void DeleteItem(int id);
-        void DeleteItems(List<int> itemIds);
+        Task<List<Item>> GetItems();
+        Task<List<ItemDto>> GetItemsByDateRange(DateTime startDate, DateTime endDate);
+        Task<List<GetItemsForListingDto>> GetItemListingFromProcedure();
+        Task<List<GetItemsTotalValueDto>> GetItemsTotalValues(bool isActive);
+        Task<List<FullItemDetailsDto>> GetItemsWithGenresAndCategories();
+        Task<int> UpsertItem(Item item);
+        Task UpsertItems(List<Item> items);
+        Task DeleteItem(int id);
+        Task DeleteItems(List<int> itemIds);
     }
 }

@@ -31,18 +31,18 @@ namespace InventoryDatabaseLayer
             _mapper = mapper;
         }
 
-        public void DeletePlayer(int id)
+        public async Task DeletePlayer(int id)
         {
-            Player? player = _context.Players.FirstOrDefault(player => player.Id == id);
+            Player? player = await _context.Players.FirstOrDefaultAsync(player => player.Id == id);
             if (player ==  null)
             {
                 return;
             }
             player.IsDeleted = true;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void DeletePlayers(List<int> playerIds)
+        public async Task DeletePlayers(List<int> playerIds)
         {
             using (TransactionScope scope = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -55,7 +55,7 @@ namespace InventoryDatabaseLayer
                 {
                     foreach (int playerId in playerIds)
                     {
-                        DeletePlayer(playerId);
+                        await DeletePlayer(playerId);
                     }
                     scope.Complete();
                 }
@@ -68,29 +68,29 @@ namespace InventoryDatabaseLayer
             }
         }
 
-        public List<PlayerDto> GetPlayers()
+        public async Task<List<PlayerDto>> GetPlayers()
         {
-            return _context.Players
+            return await _context.Players
                 .ProjectTo<PlayerDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
         }
 
-        public int UpsertPlayer(Player player)
+        public async Task<int> UpsertPlayer(Player player)
         {
             if (player.Id > 0)
             {
-                return UpdatePlayer(player);
+                return await UpdatePlayer(player);
             }
 
-            return CreatePlayer(player);
+            return await CreatePlayer(player);
         }
 
-        private int CreatePlayer(Player player)
+        private async Task<int> CreatePlayer(Player player)
         {
-            _context.Players.Add(player);
-            _context.SaveChanges();
-            Player? newPlayer = _context.Players.ToList()
-                .FirstOrDefault(currentPlayer => currentPlayer.Name.ToLower().Equals(player.Name.ToLower()));
+            await _context.Players.AddAsync(player);
+            await _context.SaveChangesAsync();
+            Player? newPlayer = await _context.Players.FirstOrDefaultAsync(
+                currentPlayer => currentPlayer.Name.ToLower().Equals(player.Name.ToLower()));
 
             if (newPlayer == null)
             {
@@ -100,10 +100,10 @@ namespace InventoryDatabaseLayer
             return newPlayer.Id;
         }
 
-        private int UpdatePlayer(Player player)
+        private async Task<int> UpdatePlayer(Player player)
         {
-            Player? dbPlayer = _context.Players
-                .FirstOrDefault(currentPlayer => currentPlayer.Id == player.Id);
+            Player? dbPlayer = await _context.Players
+                .FirstOrDefaultAsync(currentPlayer => currentPlayer.Id == player.Id);
 
             if (dbPlayer == null)
             {
@@ -119,11 +119,11 @@ namespace InventoryDatabaseLayer
             dbPlayer.IsActive = player.IsActive;
             dbPlayer.IsDeleted = player.IsDeleted;
             dbPlayer.LastModifiedDate = DateTime.UtcNow;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return dbPlayer.Id;
         }
 
-        public void UpsertPlayers(List<Player> players)
+        public async Task UpsertPlayers(List<Player> players)
         {
             using (TransactionScope scope = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -136,7 +136,7 @@ namespace InventoryDatabaseLayer
                 {
                     foreach (Player player in players)
                     {
-                        bool success = UpsertPlayer(player) > 0;
+                        bool success = await UpsertPlayer(player) > 0;
                         if (!success)
                         {
                             throw new Exception($"ERROR saving the player {player.Name}");

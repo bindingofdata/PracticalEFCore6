@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Transactions;
 
 namespace InventoryDatabaseLayer
@@ -26,18 +27,18 @@ namespace InventoryDatabaseLayer
             _mapper = mapper;
         }
 
-        public void DeleteItem(int id)
+        public async Task DeleteItem(int id)
         {
-            Item? item = _context.Items.FirstOrDefault(item => item.Id == id);
+            Item? item = await _context.Items.FirstOrDefaultAsync(item => item.Id == id);
             if (item == null)
             {
                 return;
             }
             item.IsDeleted = true;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteItems(List<int> itemIds)
+        public async Task DeleteItems(List<int> itemIds)
         {
             using (TransactionScope scope = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -50,7 +51,7 @@ namespace InventoryDatabaseLayer
                 {
                     foreach (int itemId in itemIds)
                     {
-                        DeleteItem(itemId);
+                        await DeleteItem(itemId);
                     }
                     scope.Complete();
                 }
@@ -63,63 +64,61 @@ namespace InventoryDatabaseLayer
             }
         }
 
-        public List<GetItemsForListingDto> GetItemListingFromProcedure()
+        public async Task<List<GetItemsForListingDto>> GetItemListingFromProcedure()
         {
-            return _context.ItemsForListing.FromSqlRaw("EXECUTE dbo.GetItemsForListing")
-                .ToList();
+            return await _context.ItemsForListing.FromSqlRaw("EXECUTE dbo.GetItemsForListing")
+                .ToListAsync();
         }
 
-        public List<Item> GetItems()
+        public async Task<List<Item>> GetItems()
         {
-            return _context.Items
+            return await _context.Items
                 .Include(item => item.Category)
                 .Include(item => item.Category.CategoryDetail)
                 .Include(item => item.Players)
-                .AsEnumerable()
                 .Where(item => !item.IsDeleted)
                 .OrderBy(item => item.Name)
-                .ToList();
+                .ToListAsync();
         }
 
-        public List<ItemDto> GetItemsByDateRange(DateTime startDate, DateTime endDate)
+        public async Task<List<ItemDto>> GetItemsByDateRange(DateTime startDate, DateTime endDate)
         {
-            return _context.Items
+            return await _context.Items
                 .Include(item => item.Category)
                 .Where(item => item.CreatedDate >=  startDate && item.CreatedDate <= endDate)
                 .ProjectTo<ItemDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
         }
 
-        public List<GetItemsTotalValueDto> GetItemsTotalValues(bool isActive)
+        public async Task<List<GetItemsTotalValueDto>> GetItemsTotalValues(bool isActive)
         {
             SqlParameter isActiveParam = new SqlParameter("IsActive", 1);
-            return _context.ItemsTotalValues
+            return await _context.ItemsTotalValues
                 .FromSqlRaw("SELECT * from [dbo].[GetItemsTotalValue] (@IsActive)", isActiveParam)
-                .ToList();
+                .ToListAsync();
         }
 
-        public List<FullItemDetailsDto> GetItemsWithGenresAndCategories()
+        public async Task<List<FullItemDetailsDto>> GetItemsWithGenresAndCategories()
         {
-            return _context.FullItemDetails
+            return await _context.FullItemDetails
                 .FromSqlRaw("SELECT * from [dbo].[vwFullItemDetails]")
-                .AsEnumerable()
                 .OrderBy(item => item.ItemName)
                 .ThenBy(item => item.GenreName)
                 .ThenBy(item => item.Category)
-                .ToList();
+                .ToListAsync();
         }
 
-        public int UpsertItem(Item item)
+        public async Task<int> UpsertItem(Item item)
         {
             if (item.Id > 0)
             {
-                return UpdateItem(item);
+                return await UpdateItem(item);
             }
 
-            return CreateItem(item);
+            return await CreateItem(item);
         }
 
-        public void UpsertItems(List<Item> items)
+        public async Task UpsertItems(List<Item> items)
         {
             using (TransactionScope scope = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -132,7 +131,7 @@ namespace InventoryDatabaseLayer
                 {
                     foreach (Item item in items)
                     {
-                        bool success = UpsertItem(item) > 0;
+                        bool success = await UpsertItem(item) > 0;
                         if (!success)
                         {
                             throw new Exception($"ERROR saving the item {item.Name}");
@@ -149,13 +148,13 @@ namespace InventoryDatabaseLayer
             }
         }
 
-        private int CreateItem(Item item)
+        private async Task<int> CreateItem(Item item)
         {
-            _context.Items.Add(item);
-            _context.SaveChanges();
-            Item? newItem = _context.Items.ToList()
-                .FirstOrDefault(currentItem => currentItem.Name.ToLower().Equals(item.Name.ToLower()));
-            
+            await _context.Items.AddAsync(item);
+            await _context.SaveChangesAsync();
+            Item? newItem = await _context.Items.FirstOrDefaultAsync(
+                currentItem => currentItem.Name.ToLower().Equals(item.Name.ToLower()));
+
             if (newItem == null)
             {
                 throw new Exception("Could not Create the item as expected.");
@@ -164,13 +163,13 @@ namespace InventoryDatabaseLayer
             return newItem.Id;
         }
 
-        private int UpdateItem(Item item)
+        private async Task<int> UpdateItem(Item item)
         {
-            Item? dbItem = _context.Items
+            Item? dbItem = await _context.Items
                 .Include(item => item.Category)
                 .Include(item => item.ItemGenres)
                 .Include(item => item.Players)
-                .FirstOrDefault(currentItem => currentItem.Id == item.Id);
+                .FirstOrDefaultAsync(currentItem => currentItem.Id == item.Id);
 
             if (dbItem == null)
             {
@@ -197,7 +196,7 @@ namespace InventoryDatabaseLayer
             dbItem.PurchasePrice = item.PurchasePrice;
             dbItem.Quantity = item.Quantity;
             dbItem.SoldDate = item.SoldDate;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return item.Id;
         }
     }

@@ -11,10 +11,10 @@ namespace InventoryDatabaseLayer
 {
     public interface IPlayersRepo
     {
-        List<PlayerDto> GetPlayers();
-        int UpsertPlayer(Player player);
-        void UpsertPlayers(List<Player> players);
-        void DeletePlayer(int id);
-        void DeletePlayers(List<int> playerIds);
+        Task<List<PlayerDto>> GetPlayers();
+        Task<int> UpsertPlayer(Player player);
+        Task UpsertPlayers(List<Player> players);
+        Task DeletePlayer(int id);
+        Task DeletePlayers(List<int> playerIds);
     }
 }

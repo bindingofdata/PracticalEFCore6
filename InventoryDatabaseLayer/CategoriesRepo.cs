@@ -31,18 +31,18 @@ namespace InventoryDatabaseLayer
             _mapper = mapper;
         }
 
-        public void DeleteCategory(int id)
+        public async Task DeleteCategory(int id)
         {
-            Category? category = _context.Categories.FirstOrDefault(cat => cat.Id == id);
+            Category? category = await _context.Categories.FirstOrDefaultAsync(cat => cat.Id == id);
             if (category == null)
             {
                 return;
             }
             category.IsDeleted = true;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteCategories(List<int> categoryIds)
+        public async Task DeleteCategories(List<int> categoryIds)
         {
             using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
             {
@@ -50,7 +50,7 @@ namespace InventoryDatabaseLayer
                 {
                     foreach (int catId in categoryIds)
                     {
-                        DeleteCategory(catId);
+                        await DeleteCategory(catId);
                     }
                     transaction.Commit();
                 }
@@ -64,29 +64,29 @@ namespace InventoryDatabaseLayer
             }
         }
 
-        public List<CategoryDto> ListCategoriesAndDetails()
+        public async Task<List<CategoryDto>> ListCategoriesAndDetails()
         {
-            return _context.Categories.Include(category => category.CategoryDetail)
+            return await _context.Categories.Include(category => category.CategoryDetail)
                 .ProjectTo<CategoryDto>(_mapper.ConfigurationProvider)
-                .ToList();
+                .ToListAsync();
         }
 
-        public int UpsertCategory(Category category)
+        public async Task<int> UpsertCategory(Category category)
         {
             if (category.Id > 0)
             {
-                return UpdateCategory(category);
+                return await UpdateCategory(category);
             }
 
-            return CreateCategory(category);
+            return await CreateCategory(category);
         }
 
-        private int CreateCategory(Category category)
+        private async Task<int> CreateCategory(Category category)
         {
-            _context.Categories.Add(category);
-            _context.SaveChanges();
-            Category? newCategory = _context.Categories.ToList()
-                .FirstOrDefault(currentCat => currentCat.Name.ToLower().Equals(category.Name.ToLower()));
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+            Category? newCategory = await _context.Categories
+                .FirstOrDefaultAsync(currentCat => currentCat.Name.ToLower().Equals(category.Name.ToLower()));
 
             if (newCategory == null)
             {
@@ -96,11 +96,11 @@ namespace InventoryDatabaseLayer
             return newCategory.Id;
         }
 
-        private int UpdateCategory(Category category)
+        private async Task<int> UpdateCategory(Category category)
         {
-            Category? dbCategory = _context.Categories
+            Category? dbCategory = await _context.Categories
                 .Include(category => category.CategoryDetail)
-                .FirstOrDefault(currentCat => currentCat.Id == category.Id);
+                .FirstOrDefaultAsync(currentCat => currentCat.Id == category.Id);
 
             if (dbCategory == null)
             {
@@ -119,11 +119,11 @@ namespace InventoryDatabaseLayer
             dbCategory.IsActive = category.IsActive;
             dbCategory.IsDeleted = category.IsDeleted;
             dbCategory.LastModifiedDate = DateTime.UtcNow;
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return dbCategory.Id;
         }
 
-        public void UpsertCategories(List<Category> categories)
+        public async Task UpsertCategories(List<Category> categories)
         {
             using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
             {
@@ -131,7 +131,7 @@ namespace InventoryDatabaseLayer
                 {
                     foreach (Category category in categories)
                     {
-                        bool success = UpsertCategory(category) > 0;
+                        bool success = await UpsertCategory(category) > 0;
                         if (!success)
                         {
                             throw new Exception($"ERROR saving the category {category.Name}");

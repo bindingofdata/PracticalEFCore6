@@ -82,25 +82,25 @@ namespace InventoryManager
                         case "c":
                             Console.Clear();
                             Console.WriteLine("Adding new Item(s)");
-                            CreateMultipleItems();
+                            await CreateMultipleItems();
                             Console.WriteLine("Items added");
-                            PrintAllItems(true, false);
+                            await PrintAllItems(true, false);
                             break;
                         case "3":
                         case "u":
                             Console.Clear();
                             Console.WriteLine("Updating Item(s)");
-                            UpdateMultipleItems();
+                            await UpdateMultipleItems();
                             Console.WriteLine("Items updated");
-                            PrintAllItems(true, false);
+                            await PrintAllItems(true, false);
                             break;
                         case "4":
                         case "d":
                             Console.Clear();
                             Console.WriteLine("Deleting Item(s)");
-                            DeleteMultipleItems();
+                            await DeleteMultipleItems();
                             Console.WriteLine("Items deleted");
-                            PrintAllItems(false, false);
+                            await PrintAllItems(false, false);
                             break;
                         default:
                             exit = true;

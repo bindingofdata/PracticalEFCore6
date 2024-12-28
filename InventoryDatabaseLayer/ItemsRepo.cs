@@ -72,13 +72,13 @@ namespace InventoryDatabaseLayer
 
         public async Task<List<Item>> GetItems()
         {
-            return await _context.Items
+            List<Item> items = await _context.Items
                 .Include(item => item.Category)
                 .Include(item => item.Category.CategoryDetail)
                 .Include(item => item.Players)
                 .Where(item => !item.IsDeleted)
-                .OrderBy(item => item.Name)
                 .ToListAsync();
+            return items.OrderBy(item => item.Name).ToList();
         }
 
         public async Task<List<ItemDto>> GetItemsByDateRange(DateTime startDate, DateTime endDate)
@@ -100,12 +100,15 @@ namespace InventoryDatabaseLayer
 
         public async Task<List<FullItemDetailsDto>> GetItemsWithGenresAndCategories()
         {
-            return await _context.FullItemDetails
+            List<FullItemDetailsDto> items = await _context.FullItemDetails
                 .FromSqlRaw("SELECT * from [dbo].[vwFullItemDetails]")
+                .ToListAsync();
+
+            return items
                 .OrderBy(item => item.ItemName)
                 .ThenBy(item => item.GenreName)
                 .ThenBy(item => item.Category)
-                .ToListAsync();
+                .ToList();
         }
 
         public async Task<int> UpsertItem(Item item)
@@ -152,7 +155,8 @@ namespace InventoryDatabaseLayer
         {
             await _context.Items.AddAsync(item);
             await _context.SaveChangesAsync();
-            Item? newItem = await _context.Items.FirstOrDefaultAsync(
+            List<Item> items = await _context.Items.ToListAsync();
+            Item? newItem = items.FirstOrDefault(
                 currentItem => currentItem.Name.ToLower().Equals(item.Name.ToLower()));
 
             if (newItem == null)

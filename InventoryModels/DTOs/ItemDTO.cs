@@ -21,6 +21,7 @@ namespace InventoryModels.Dtos
         public int Quantity { get; set; }
         public string CategoryName { get; set; }
         public DateTime CreatedDate { get; set; }
+        public virtual List<Player> Players { get; set; } = new List<Player>();
 
         public override string ToString()
         {

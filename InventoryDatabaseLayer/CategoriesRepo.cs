@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Diagnostics;
+using System.Transactions;
 
 namespace InventoryDatabaseLayer
 {
@@ -44,7 +45,13 @@ namespace InventoryDatabaseLayer
 
         public async Task DeleteCategories(List<int> categoryIds)
         {
-            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions
+                {
+                    IsolationLevel = IsolationLevel.ReadCommitted,
+                },
+                TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
@@ -52,13 +59,12 @@ namespace InventoryDatabaseLayer
                     {
                         await DeleteCategory(catId);
                     }
-                    transaction.Commit();
+                    scope.Complete();
                 }
                 catch (Exception ex)
                 {
                     // log it:
                     Debug.WriteLine(ex.ToString());
-                    transaction.Rollback();
                     throw;
                 }
             }
@@ -83,6 +89,8 @@ namespace InventoryDatabaseLayer
 
         private async Task<int> CreateCategory(Category category)
         {
+            category.CreatedDate = DateTime.UtcNow;
+            category.CreatedByUserId = Environment.UserName;
             await _context.Categories.AddAsync(category);
             await _context.SaveChangesAsync();
             Category? newCategory = await _context.Categories
@@ -125,7 +133,13 @@ namespace InventoryDatabaseLayer
 
         public async Task UpsertCategories(List<Category> categories)
         {
-            using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions
+                {
+                    IsolationLevel = IsolationLevel.ReadCommitted,
+                },
+                TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
@@ -137,13 +151,12 @@ namespace InventoryDatabaseLayer
                             throw new Exception($"ERROR saving the category {category.Name}");
                         }
                     }
-                    transaction.Commit();
+                    scope.Complete();
                 }
                 catch (Exception ex)
                 {
                     // log it:
                     Debug.WriteLine(ex.ToString());
-                    transaction.Rollback();
                     throw;
                 }
             }

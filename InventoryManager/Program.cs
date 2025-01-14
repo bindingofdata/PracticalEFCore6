@@ -120,6 +120,8 @@ namespace InventoryManager
             bool createAnother = true;
             while (createAnother)
             {
+                List<(CreateOrUpdateItemDto item, List<Player> players)> itemsAndPlayers =
+                    new List<(CreateOrUpdateItemDto item, List<Player> players)>();
                 CreateOrUpdateItemDto newItem = new CreateOrUpdateItemDto();
                 Console.WriteLine("Creating new item.");
                 Console.WriteLine("Enter item name.");
@@ -135,7 +137,6 @@ namespace InventoryManager
                 newItem.Quantity = GetIntFromUser();
                 Console.WriteLine("Enter any notes.");
                 newItem.Notes = Console.ReadLine();
-                newItem.Players = await AddPlayers(batchCreate);
 
                 newItem.IsActive = true;
                 newItem.IsDeleted = false;
@@ -144,10 +145,25 @@ namespace InventoryManager
                 if (!batchCreate)
                 {
                     await _itemsService.UpsertItem(newItem);
+                    ItemDto? item = _itemsService.GetItems().Result.
+                        FirstOrDefault(item =>
+                            item.Name.Equals(newItem.Name, StringComparison.OrdinalIgnoreCase));
+                    List<Player> players = await AddPlayers(batchCreate);
+                    if (players.Count > 0)
+                    {
+                        newItem.Players = players;
+                        newItem.Id = item.Id;
+                        await _itemsService.UpsertItem(newItem);
+                    }
                 }
                 else
                 {
                     allItems.Add(newItem);
+                    List<Player> players = await AddPlayers(batchCreate);
+                    if (players.Count > 0)
+                    {
+                        itemsAndPlayers.Add((newItem, players));
+                    }
                 }
 
                 Console.WriteLine("Would you like to create another item? y/n");
@@ -155,6 +171,15 @@ namespace InventoryManager
 
                 if (!createAnother && batchCreate)
                 {
+                    await _itemsService.UpsertItems(allItems);
+                    List<ItemDto> dbItems = await _itemsService.GetItems();
+                    foreach ((CreateOrUpdateItemDto item, List<Player> players) in itemsAndPlayers)
+                    {
+                        ItemDto? dbItem = dbItems.FirstOrDefault(dbItem =>
+                            dbItem.Name.Equals(item.Name, StringComparison.OrdinalIgnoreCase));
+                        item.Players = players;
+                        item.Id = dbItem.Id;
+                    }
                     await _itemsService.UpsertItems(allItems);
                 }
             }

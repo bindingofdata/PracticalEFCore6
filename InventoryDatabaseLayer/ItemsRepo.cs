@@ -45,7 +45,8 @@ namespace InventoryDatabaseLayer
                 new TransactionOptions
                 {
                     IsolationLevel = IsolationLevel.ReadCommitted,
-                }))
+                },
+                TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
@@ -128,7 +129,8 @@ namespace InventoryDatabaseLayer
                 new TransactionOptions
                 {
                     IsolationLevel = IsolationLevel.ReadCommitted,
-                }))
+                },
+                TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
@@ -153,6 +155,8 @@ namespace InventoryDatabaseLayer
 
         private async Task<int> CreateItem(Item item)
         {
+            item.CreatedDate = DateTime.Now;
+            item.CreatedByUserId = Environment.UserName;
             await _context.Items.AddAsync(item);
             await _context.SaveChangesAsync();
             List<Item> items = await _context.Items.ToListAsync();

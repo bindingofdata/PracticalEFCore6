@@ -48,7 +48,8 @@ namespace InventoryDatabaseLayer
                 new TransactionOptions
                 {
                     IsolationLevel = IsolationLevel.ReadCommitted,
-                }))
+                },
+                TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
@@ -86,6 +87,8 @@ namespace InventoryDatabaseLayer
 
         private async Task<int> CreateGenre(Genre genre)
         {
+            genre.CreatedDate = DateTime.Now;
+            genre.CreatedByUserId = Environment.UserName;
             await _context.Genres.AddAsync(genre);
             await _context.SaveChangesAsync();
             Genre? newGenre = await _context.Genres
@@ -124,7 +127,8 @@ namespace InventoryDatabaseLayer
                 new TransactionOptions
                 {
                     IsolationLevel = IsolationLevel.ReadCommitted,
-                }))
+                },
+                TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {

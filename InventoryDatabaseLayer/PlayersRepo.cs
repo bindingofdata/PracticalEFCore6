@@ -49,7 +49,8 @@ namespace InventoryDatabaseLayer
                 new TransactionOptions
                 {
                     IsolationLevel = IsolationLevel.ReadCommitted,
-                }))
+                },
+                TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
@@ -87,6 +88,8 @@ namespace InventoryDatabaseLayer
 
         private async Task<int> CreatePlayer(Player player)
         {
+            player.CreatedDate = DateTime.UtcNow;
+            player.CreatedByUserId = Environment.UserName;
             await _context.Players.AddAsync(player);
             await _context.SaveChangesAsync();
             Player? newPlayer = await _context.Players.FirstOrDefaultAsync(
@@ -130,7 +133,8 @@ namespace InventoryDatabaseLayer
                 new TransactionOptions
                 {
                     IsolationLevel = IsolationLevel.ReadCommitted,
-                }))
+                },
+                TransactionScopeAsyncFlowOption.Enabled))
             {
                 try
                 {
